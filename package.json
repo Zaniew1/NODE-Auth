@@ -4,7 +4,7 @@
   "description": "Authorization Project",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "ts-node-dev --files /index.ts"
   },
   "repository": {
     "type": "git",
@@ -26,8 +26,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.7.0",
-    "resend": "^4.0.0",
+    "joi":"17.13.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
