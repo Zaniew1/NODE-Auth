@@ -6,15 +6,11 @@ interface PasswordManageType {
 }
 
 class PasswordManageClass implements PasswordManageType {
-  private salt;
-  constructor(salt: number) {
-    this.salt = salt;
-  }
   public async comparePasswords(passwordToValidate: string, databasePassword: string) {
-    return await bcrypt.compare(passwordToValidate, databasePassword);
+    return await bcrypt.compare(passwordToValidate, databasePassword).catch(() => false);
   }
-  public async hashPassword(password: string) {
-    return await bcrypt.hash(password, this.salt);
+  public async hashPassword(password: string, salt?: number) {
+    return await bcrypt.hash(password, salt ?? 10);
   }
 }
-export const PasswordManage = new PasswordManageClass(10);
+export const PasswordManage = new PasswordManageClass();

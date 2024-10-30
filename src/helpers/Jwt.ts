@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import "dotenv/config";
-import AppError from "../utils/appError";
+import AppError from "../utils/helpers/appError";
 import { Request, Response, NextFunction } from "express";
 
 interface JsonWebTokenClassType {
@@ -32,22 +32,19 @@ class JsonWebTokenClass implements JsonWebTokenClassType {
     });
   }
   public validateAccess(req: Request, res: Response, next: NextFunction) {
-      const authHeader = req.header["authorization"];
-      const token = authHeader && authHeader.split(" ")[1];
-      if (!token) {
-        return next(new AppError("There is no access token", 401));
-      }
-      jwt.verify(token, this.accessTokenSecret, (err: any, user: any) => {
-        if (err) {
-          return next(new AppError("You dont have access to this", 403));
-        }
-        req.user = user;
-        next();
-        
-      })
-  };
-
-  
+    // const authHeader = req.header["authorization"];
+    // const token = authHeader && authHeader.split(" ")[1];
+    // if (!token) {
+    //   return next(new AppError("There is no access token", 401));
+    // }
+    // jwt.verify(token, this.accessTokenSecret, (err: any, user: any) => {
+    //   if (err) {
+    //     return next(new AppError("You dont have access to this", 403));
+    //   }
+    //   req.user = user;
+    //   next();
+    // });
+  }
 }
 
 export const JWT = new JsonWebTokenClass(
