@@ -7,6 +7,7 @@ import errorHandler from "./middleware/errorHandler";
 import { Request, Response } from "express";
 import { OK } from "./utils/constants/http";
 import { PORT, NODE_ENV, APP_VERSION, APP_ORIGIN } from "./utils/constants/env";
+import { connectToDatabase } from "./config/db";
 const app = express();
 
 app.use(express.json());
@@ -20,10 +21,6 @@ app.use(
 );
 app.use(cookieParser());
 
-app.listen(PORT, () => {
-  console.log("Server running on port: " + PORT + " on " + NODE_ENV + " environment");
-});
-
 app.use(`/api/${APP_VERSION}/auth`, authRouter);
 app.get("/", (req: Request, res: Response) => {
   // throw new Error("Test error");
@@ -32,4 +29,10 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 app.use(errorHandler);
+
+app.listen(PORT, async () => {
+  console.log("Server running on port: " + PORT + " on " + NODE_ENV + " environment");
+  await connectToDatabase();
+});
+
 export default app;
