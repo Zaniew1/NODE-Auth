@@ -1,6 +1,6 @@
 import { UserType } from "../utils/zodSchemas/registerSchema";
 
-interface DatabaseInterface {
+export interface DatabaseInterface {
   create(table: TableType, data: object): Promise<UserType>;
   update(table: TableType, data: object): Promise<void | object>;
   delete(table: TableType, id: number): Promise<void | object>;
