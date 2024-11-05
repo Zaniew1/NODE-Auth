@@ -1,13 +1,12 @@
+import { HttpStatusCode } from "../constants/http";
+
+const enum AppErrorCode {
+  InvalidAccessToken = "InvalidAccessToken",
+}
+
 class AppError extends Error {
-  statusCode: number;
-  status: string;
-  isOperational: boolean;
-  constructor(message: string, statusCode: number) {
+  constructor(public statusCode: HttpStatusCode, public message: string, public errorCode?: AppErrorCode) {
     super(message);
-    this.statusCode = statusCode;
-    this.status = `${statusCode}`.startsWith("4") ? "fail" : "error";
-    this.isOperational = true;
-    Error.captureStackTrace(this, this.constructor);
   }
 }
 

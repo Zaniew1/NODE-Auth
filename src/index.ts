@@ -22,8 +22,7 @@ app.use(
 app.use(cookieParser());
 
 app.use(`/api/${APP_VERSION}/auth`, authRouter);
-app.get("/", (req: Request, res: Response) => {
-  // throw new Error("Test error");
+app.get(`/api/${APP_VERSION}/`, (req: Request, res: Response) => {
   res.status(OK).json({
     status: "good",
   });

@@ -4,32 +4,25 @@ import AppError from "./appError";
 import { Request, Response, NextFunction } from "express";
 
 interface JsonWebTokenClassType {
-  signToken(id: number): string | AppError;
+  signToken(id: object, secret: "access" | "refresh", options: object): string | AppError;
   validateAccess(req: Request, res: Response, next: NextFunction): void;
 }
 
 class JsonWebTokenClass implements JsonWebTokenClassType {
   private accessTokenSecret;
-  private expiresIn;
   private refreshSecret;
-  constructor(accessTokenSecret: string, expiresIn: string, refreshSecret: string) {
+  constructor(accessTokenSecret: string, refreshSecret: string) {
     this.accessTokenSecret = accessTokenSecret;
-    this.expiresIn = expiresIn;
     this.refreshSecret = refreshSecret;
   }
-  public signToken(id: number) {
+  public signToken(id: object, secret: "access" | "refresh", options: object) {
     if (!this.accessTokenSecret) {
-      return new AppError("There is no access token secret", 400);
-    }
-    if (!this.expiresIn) {
-      return new AppError("There is no expires in secret", 400);
+      throw new Error("There is no access token secret");
     }
     if (!this.refreshSecret) {
-      return new AppError("There is no refresh secret", 400);
+      throw new Error("There is no refresh secret");
     }
-    return jwt.sign({ id }, this.accessTokenSecret, {
-      expiresIn: this.expiresIn,
-    });
+    return jwt.sign({ id }, secret === "access" ? this.accessTokenSecret : this.refreshSecret, options);
   }
   public validateAccess(req: Request, res: Response, next: NextFunction) {
     // const authHeader = req.header["authorization"];
@@ -47,8 +40,4 @@ class JsonWebTokenClass implements JsonWebTokenClassType {
   }
 }
 
-export const JWT = new JsonWebTokenClass(
-  process.env.JWT_SECRET as string,
-  process.env.JWT_EXPIRES_IN as string,
-  process.env.JWT_REFRESH_SECRET as string
-);
+export const JWT = new JsonWebTokenClass(process.env.JWT_SECRET as string, process.env.JWT_REFRESH_SECRET as string);
