@@ -20,13 +20,8 @@ app.use(
   })
 );
 app.use(cookieParser());
-
-app.use(`/api/${APP_VERSION}/auth`, authRouter);
-app.get(`/api/${APP_VERSION}/`, (req: Request, res: Response) => {
-  res.status(OK).json({
-    status: "good",
-  });
-});
+const authPath = `api/${APP_VERSION}/auth`;
+app.use(`/`, authRouter);
 app.use(errorHandler);
 
 app.listen(PORT, async () => {

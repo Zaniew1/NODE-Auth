@@ -16,8 +16,7 @@ export const registerHandler: RequestHandler<{ id: string }> = catchAsync(async 
     user,
   });
 });
-export const loginHandler = catchAsync(async (req: Request, res: Response) => {
-  res.status(OK).json({ message: "asd" });
+export const loginHandler: RequestHandler<{ id: string }> = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   // validate data with zod
   const request = loginSchema.parse({ ...req.body, userAgent: req.headers["user-agent"] });
   // validate if email and password are correct, create tokens, create session
@@ -27,22 +26,22 @@ export const loginHandler = catchAsync(async (req: Request, res: Response) => {
     status: "successfully login",
   });
 });
-export const forgetPasswordHandler = catchAsync(async (req: Request, res: Response) => {
+export const forgetPasswordHandler: RequestHandler<{ id: string }> = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   res.status(OK).json({
     status: "successfully forget pass",
   });
 });
-export const logoutHandler = catchAsync(async (req: Request, res: Response) => {
+export const logoutHandler: RequestHandler<{ id: string }> = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   res.status(OK).json({
     status: "successfully logout",
   });
 });
-export const changePasswordHandler = catchAsync(async (req: Request, res: Response) => {
+export const changePasswordHandler: RequestHandler<{ id: string }> = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   res.status(OK).json({
     status: "successfully changed pass",
   });
 });
-export const resetPasswordHandler = catchAsync(async (req: Request, res: Response) => {
+export const resetPasswordHandler: RequestHandler<{ id: string }> = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   res.status(OK).json({
     status: "successfully reseted password",
   });

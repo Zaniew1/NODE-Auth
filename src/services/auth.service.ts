@@ -50,7 +50,6 @@ export const createUser = async (data: newUserType) => {
 };
 
 export const loginUser = async (data: loginUserType) => {
-  console.log("asd");
   const { password, email, userAgent } = data as loginUserType;
 
   const user = await UserModel.findOne({ email });
