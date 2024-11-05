@@ -1,6 +1,6 @@
 import { HttpStatusCode } from "../constants/http";
 
-const enum AppErrorCode {
+export const enum AppErrorCode {
   InvalidAccessToken = "InvalidAccessToken",
 }
 

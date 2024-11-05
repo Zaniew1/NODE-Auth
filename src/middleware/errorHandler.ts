@@ -3,7 +3,7 @@ import { z } from "zod";
 import AppError from "../utils/helpers/appError";
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "../utils/constants/http";
 import { REFRESH_PATH, clearAuthCookies } from "../utils/helpers/cookies";
-
+// catches zod errors
 const handleZodError = (res: Response, error: z.ZodError) => {
   const errors = error.issues.map((err) => ({
     path: err.path.join("."),
@@ -15,7 +15,7 @@ const handleZodError = (res: Response, error: z.ZodError) => {
     message: error.message,
   });
 };
-
+// catches new AppError()
 const handleAppError = (res: Response, error: AppError) => {
   return res.status(error.statusCode).json({
     message: error.message,
@@ -23,8 +23,8 @@ const handleAppError = (res: Response, error: AppError) => {
   });
 };
 
+// main error handler, handles all zod errors while validation of data from frontend, and from our custom errors - created thanks to new AppError()
 const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
-  console.log(error);
   if (req.path === REFRESH_PATH) {
     clearAuthCookies(res);
   }
