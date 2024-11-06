@@ -5,12 +5,10 @@ import VerificationCodeModel from "../models/verificationCode.model";
 import UserModel from "../models/user.model";
 import SessionModel from "../models/session.model";
 import { VerificationCodeType } from "../types/verificationCodeManage";
-import { oneYearFromNow } from "../utils/helpers/date";
+import { ONE_DAY_MS, oneYearFromNow, thirtyDaysFromNow } from "../utils/helpers/date";
 import { JWT } from "../utils/helpers/Jwt";
 import appAssert from "../utils/helpers/appAssert";
 import { CONFLICT, UNAUTHORIZED } from "../utils/constants/http";
-import AppError from "../utils/helpers/appError";
-
 export const createUser = async (data: newUserType) => {
   const { name, password, email, surname, userAgent } = data as newUserType;
 
@@ -50,8 +48,7 @@ export const createUser = async (data: newUserType) => {
 };
 
 export const loginUser = async ({ password, email, userAgent }: loginUserType) => {
-
-  const user = await UserModel.findOne({ email});
+  const user = await UserModel.findOne({ email });
   // validate user and password
   appAssert(user, UNAUTHORIZED, "Invalid user");
   const passIsValid = user.comparePassword(password);
@@ -62,7 +59,7 @@ export const loginUser = async ({ password, email, userAgent }: loginUserType) =
     userId,
     userAgent: userAgent,
   });
-  const sessionInfo = {sessionId: session._id};
+  const sessionInfo = { sessionId: session._id };
   // sign access token & refresh
   const refreshToken = JWT.signRefreshToken(sessionInfo);
   const accessToken = JWT.signAccessToken({ ...sessionInfo, userId });
@@ -70,5 +67,27 @@ export const loginUser = async ({ password, email, userAgent }: loginUserType) =
     user: user.omitPassword(),
     accessToken,
     refreshToken,
+  };
+};
+
+export const refreshAccessTokenUser = async (refreshToken: string) => {
+  const payload = JWT.validateRefreshToken(refreshToken);
+  appAssert(payload, UNAUTHORIZED, "Invalid refresh token");
+  // find session in db
+  const session = await SessionModel.findById(payload.sessionId);
+  const now = Date.now();
+  appAssert(session && session.expiresAt.getTime() > now, UNAUTHORIZED, "Session expired");
+  // refresh session if it's coming to the end (1day)
+  const sessionExpiringSoon = session.expiresAt.getTime() - now <= ONE_DAY_MS;
+  if (sessionExpiringSoon) {
+    session.expiresAt = thirtyDaysFromNow();
+    await session.save();
+  }
+  const sessionId = session._id;
+  const newRefreshToken = sessionExpiringSoon ? JWT.signRefreshToken({ sessionId }) : undefined;
+  const accessToken = JWT.signAccessToken({ userId: session.userId, sessionId });
+  return {
+    accessToken,
+    newRefreshToken,
   };
 };
