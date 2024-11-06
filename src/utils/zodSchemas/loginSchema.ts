@@ -26,7 +26,7 @@ const loginSchema = z.object({
 type zodloginUserType = z.infer<typeof loginSchema>;
 
 export type loginUserType = zodloginUserType & {
-  userAgent?: any;
+  userAgent?: string;
 };
 
 export default loginSchema;

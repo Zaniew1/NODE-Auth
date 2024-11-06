@@ -38,8 +38,8 @@ export const createUser = async (data: newUserType) => {
   });
 
   // sign access token & refresh
-  const refreshToken = JWT.signToken({ sessionId: session._id }, "refresh", { audience: ["user"], expiresIn: "30d" });
-  const accessToken = JWT.signToken({ sessionId: session._id, userId: user._id }, "access", { audience: ["user"], expiresIn: "15m" });
+  const refreshToken = JWT.signRefreshToken({ sessionId: session._id });
+  const accessToken = JWT.signAccessToken({ sessionId: session._id, userId: user._id });
 
   // return user & token
   return {
@@ -49,28 +49,23 @@ export const createUser = async (data: newUserType) => {
   };
 };
 
-export const loginUser = async (data: loginUserType) => {
-  const { password, email, userAgent } = data as loginUserType;
+export const loginUser = async ({ password, email, userAgent }: loginUserType) => {
 
-  const user = await UserModel.findOne({ email });
+  const user = await UserModel.findOne({ email});
+  // validate user and password
   appAssert(user, UNAUTHORIZED, "Invalid user");
   const passIsValid = user.comparePassword(password);
   appAssert(passIsValid, UNAUTHORIZED, "Invalid Password");
-
   const userId = user._id;
   // create session
   const session = await SessionModel.create({
     userId,
     userAgent: userAgent,
   });
-  const sessionInfo = {
-    sessionId: session._id,
-  };
-
+  const sessionInfo = {sessionId: session._id};
   // sign access token & refresh
-  const refreshToken = JWT.signToken(sessionInfo, "refresh", { audience: ["user"], expiresIn: "30d" });
-  const accessToken = JWT.signToken({ ...sessionInfo, userId }, "access", { audience: ["user"], expiresIn: "15m" });
-
+  const refreshToken = JWT.signRefreshToken(sessionInfo);
+  const accessToken = JWT.signAccessToken({ ...sessionInfo, userId });
   return {
     user: user.omitPassword(),
     accessToken,

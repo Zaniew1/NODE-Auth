@@ -1,43 +1,56 @@
-import jwt from "jsonwebtoken";
-import "dotenv/config";
+import jwt, {SignOptions, VerifyOptions} from "jsonwebtoken";
 import AppError from "./appError";
+import Audience from "../constants/audience";
+import { UserDocument } from "../../models/user.model";
+import { SessionDocument } from "../../models/session.model";
 import { Request, Response, NextFunction } from "express";
-
+import { JWT_ACCESS_EXPIRES_IN, JWT_REFRESH_SECRET, JWT_REFRESH_EXPIRES_IN, JWT_SECRET } from "../constants/env";
+import { UNAUTHORIZED } from "../constants/http";
 interface JsonWebTokenClassType {
-  signToken(id: object, secret: "access" | "refresh", options: object): string | AppError;
-  validateAccess(req: Request, res: Response, next: NextFunction): void;
+  signAccessToken(id: AccessTokenPayload,options: SignOptions): string;
+  signRefreshToken(id: RefreshTokenPayload,  options: SignOptions): string;
+  validateAccessToken(token : string, options?: VerifyOptions): void;
+  validateRefreshToken(token : string, options?: VerifyOptions): void;
+}
+type AccessTokenPayload = {
+  userId: UserDocument["_id"];
+  sessionId: SessionDocument["_id"];
+}
+type RefreshTokenPayload = {
+  sessionId: SessionDocument["_id"];
 }
 
 class JsonWebTokenClass implements JsonWebTokenClassType {
-  private accessTokenSecret;
-  private refreshSecret;
-  constructor(accessTokenSecret: string, refreshSecret: string) {
-    this.accessTokenSecret = accessTokenSecret;
-    this.refreshSecret = refreshSecret;
+  private accessTokenSecret = JWT_SECRET;
+  private refreshTokenSecret = JWT_REFRESH_SECRET;
+  private refreshTokenExpire = JWT_REFRESH_EXPIRES_IN;
+  private accessTokenExpire = JWT_ACCESS_EXPIRES_IN;
+
+  public signAccessToken(id: AccessTokenPayload,options?:SignOptions ){
+    const defaultOptions = options || { expiresIn: this.accessTokenExpire, audience: [Audience.User], }
+    return jwt.sign({ id },  this.accessTokenSecret , defaultOptions);
   }
-  public signToken(id: object, secret: "access" | "refresh", options: object) {
-    if (!this.accessTokenSecret) {
-      throw new Error("There is no access token secret");
-    }
-    if (!this.refreshSecret) {
-      throw new Error("There is no refresh secret");
-    }
-    return jwt.sign({ id }, secret === "access" ? this.accessTokenSecret : this.refreshSecret, options);
+  public signRefreshToken(id: RefreshTokenPayload,options?:SignOptions){
+    const defaultOptions = options || { expiresIn: this.refreshTokenExpire, audience: [Audience.User], }
+    return jwt.sign({ id },  this.refreshTokenSecret , defaultOptions);
   }
-  public validateAccess(req: Request, res: Response, next: NextFunction) {
-    // const authHeader = req.header["authorization"];
-    // const token = authHeader && authHeader.split(" ")[1];
-    // if (!token) {
-    //   return next(new AppError("There is no access token", 401));
-    // }
-    // jwt.verify(token, this.accessTokenSecret, (err: any, user: any) => {
-    //   if (err) {
-    //     return next(new AppError("You dont have access to this", 403));
-    //   }
-    //   req.user = user;
-    //   next();
-    // })
+
+  public validateAccessToken<Token extends AccessTokenPayload>(token:string, options?: VerifyOptions)  {
+    const defaultOptions = options || {  audience: [Audience.User], }
+    try{
+      return jwt.verify(token, this.accessTokenSecret, defaultOptions) as Token;
+    }catch(e:any){
+      // return new AppError(UNAUTHORIZED, "You are not authorized");
+    }
+  }
+  public validateRefreshToken<Token extends AccessTokenPayload>(token:string, options?: VerifyOptions) {
+    const defaultOptions = options || {  audience: [Audience.User], }
+    try{
+      return jwt.verify(token, this.refreshTokenSecret, defaultOptions) as Token;
+    }catch(e:any){
+      // return new AppError(UNAUTHORIZED, "You are not authorized");
+    }
   }
 }
 
-export const JWT = new JsonWebTokenClass(process.env.JWT_SECRET as string, process.env.JWT_REFRESH_SECRET as string);
+export const JWT = new JsonWebTokenClass();
