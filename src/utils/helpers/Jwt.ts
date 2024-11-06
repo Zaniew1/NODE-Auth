@@ -40,15 +40,15 @@ class JsonWebTokenClass implements JsonWebTokenClassType {
     try{
       return jwt.verify(token, this.accessTokenSecret, defaultOptions) as Token;
     }catch(e:any){
-      // return new AppError(UNAUTHORIZED, "You are not authorized");
+      throw new AppError(UNAUTHORIZED, "You are not authorized");
     }
   }
-  public validateRefreshToken<Token extends AccessTokenPayload>(token:string, options?: VerifyOptions) {
+  public validateRefreshToken<Token extends RefreshTokenPayload>(token:string, options?: VerifyOptions) {
     const defaultOptions = options || {  audience: [Audience.User], }
     try{
       return jwt.verify(token, this.refreshTokenSecret, defaultOptions) as Token;
     }catch(e:any){
-      // return new AppError(UNAUTHORIZED, "You are not authorized");
+      throw new AppError(UNAUTHORIZED, "You are not authorized");
     }
   }
 }

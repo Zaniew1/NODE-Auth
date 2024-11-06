@@ -51,7 +51,6 @@ export const logoutHandler: RequestHandler<{ id: string }> = catchAsync(
     if(payload){
       await SessionModel.findByIdAndDelete(payload.sessionId)
     }
-
     res.status(OK).json({
       status: "successfully logout",
     });
