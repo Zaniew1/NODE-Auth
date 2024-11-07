@@ -1,14 +1,15 @@
 import catchAsync from "../utils/helpers/catchAsync";
 import { RequestHandler, Request, Response, NextFunction } from "express";
 import registerSchema from "../utils/zodSchemas/registerSchema";
+import verificationSchema from "../utils/zodSchemas/verificationSchema";
 import loginSchema from "../utils/zodSchemas/loginSchema";
-import { createUser, loginUser, refreshAccessTokenUser } from "../services/auth.service";
+import { createUser, loginUser, refreshAccessTokenUser, verifyUserEmail } from "../services/auth.service";
 import { CREATED, OK, UNAUTHORIZED } from "../utils/constants/http";
 import CookiesClass from "../utils/helpers/cookies";
 import { JWT } from "../utils/helpers/Jwt";
 import SessionModel from "../models/session.model";
 import appAssert from "../utils/helpers/appAssert";
-export const registerHandler: RequestHandler<{ id: string }> = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+export const registerHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   // validate data with zod
   const request = registerSchema.parse({ ...req.body, userAgent: req.headers["user-agent"] });
   // create new user, accessToken and refreshToken
@@ -20,7 +21,7 @@ export const registerHandler: RequestHandler<{ id: string }> = catchAsync(async 
   });
 });
 
-export const loginHandler: RequestHandler<{ id: string }> = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+export const loginHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   // validate data with zod
   const request = loginSchema.parse({ ...req.body, userAgent: req.headers["user-agent"] });
   // validate if email and password are correct, create tokens, create session
@@ -31,7 +32,7 @@ export const loginHandler: RequestHandler<{ id: string }> = catchAsync(async (re
   });
 });
 
-export const logoutHandler: RequestHandler<{ id: string }> = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+export const logoutHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const accessToken = req.cookies.accessToken as string | "";
   appAssert(accessToken, UNAUTHORIZED, "Missing access token");
 
@@ -43,7 +44,7 @@ export const logoutHandler: RequestHandler<{ id: string }> = catchAsync(async (r
   return CookiesClass.clearAuthCookies(res).status(OK).json({ message: "Logout successful" });
 });
 
-export const refreshHandler: RequestHandler<{ id: string }> = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+export const refreshHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const refreshToken = req.cookies.refreshToken as string | undefined;
   appAssert(refreshToken, UNAUTHORIZED, "Missing refresh token");
   const { accessToken, newRefreshToken } = await refreshAccessTokenUser(refreshToken);
@@ -55,20 +56,30 @@ export const refreshHandler: RequestHandler<{ id: string }> = catchAsync(async (
   });
 });
 
-export const forgetPasswordHandler: RequestHandler<{ id: string }> = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+export const forgetPasswordHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   res.status(OK).json({
     status: "successfully forget pass",
   });
 });
 
-export const changePasswordHandler: RequestHandler<{ id: string }> = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+export const changePasswordHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   res.status(OK).json({
     status: "successfully changed pass",
   });
 });
 
-export const resetPasswordHandler: RequestHandler<{ id: string }> = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+export const resetPasswordHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   res.status(OK).json({
     status: "successfully reseted password",
+  });
+});
+
+export const verifyEmailHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  console.log(req);
+  const verificationCode = verificationSchema.parse(req.params.code);
+  await verifyUserEmail(verificationCode);
+
+  res.status(OK).json({
+    status: "successfully verified email",
   });
 });

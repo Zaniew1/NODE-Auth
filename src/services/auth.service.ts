@@ -8,7 +8,7 @@ import { VerificationCodeType } from "../types/verificationCodeManage";
 import { ONE_DAY_MS, oneYearFromNow, thirtyDaysFromNow } from "../utils/helpers/date";
 import { JWT } from "../utils/helpers/Jwt";
 import appAssert from "../utils/helpers/appAssert";
-import { CONFLICT, UNAUTHORIZED } from "../utils/constants/http";
+import { CONFLICT, INTERNAL_SERVER_ERROR, NOT_FOUND, UNAUTHORIZED } from "../utils/constants/http";
 export const createUser = async (data: newUserType) => {
   const { name, password, email, surname, userAgent } = data as newUserType;
 
@@ -89,5 +89,22 @@ export const refreshAccessTokenUser = async (refreshToken: string) => {
   return {
     accessToken,
     newRefreshToken,
+  };
+};
+export const verifyUserEmail = async (verificationCode: string) => {
+  // get verification code
+  const validCode = await VerificationCodeModel.findOne({
+    _id: verificationCode,
+    type: VerificationCodeType.EmailVerification,
+    expiresAt: { $gt: new Date() },
+  });
+  appAssert(validCode, NOT_FOUND, "Invalid or expired verification code");
+  // get user and set verified = true
+  const verifiedUser = await UserModel.findByIdAndUpdate(validCode.userId, { verified: true }, { new: true });
+  appAssert(verifiedUser, INTERNAL_SERVER_ERROR, "Faild to verify user by email");
+  // delete verification code
+  await validCode.deleteOne();
+  return {
+    user: verifiedUser.omitPassword(),
   };
 };
