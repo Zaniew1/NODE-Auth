@@ -6,7 +6,7 @@ import { JWT_ACCESS_EXPIRES_IN, JWT_REFRESH_SECRET, JWT_REFRESH_EXPIRES_IN, JWT_
 import { INTERNAL_SERVER_ERROR, UNAUTHORIZED } from "../constants/http";
 import appAssert from "./appAssert";
 import AppError, { AppErrorCode } from "./appError";
-interface JsonWebTokenClassType {
+interface JsonWebTokenClassInterface {
   signAccessToken(id: AccessTokenPayload, options: SignOptions): string;
   signRefreshToken(id: RefreshTokenPayload, options: SignOptions): string;
   validateAccessToken(token: string, options?: VerifyOptions): void;
@@ -20,7 +20,7 @@ export type RefreshTokenPayload = {
   sessionId: SessionDocument["_id"];
 };
 
-class JsonWebTokenClass implements JsonWebTokenClassType {
+class JsonWebTokenClass implements JsonWebTokenClassInterface {
   private accessTokenSecret = JWT_SECRET;
   private refreshTokenSecret = JWT_REFRESH_SECRET;
   private refreshTokenExpire = JWT_REFRESH_EXPIRES_IN;
@@ -34,7 +34,6 @@ class JsonWebTokenClass implements JsonWebTokenClassType {
     const defaultOptions = options || { expiresIn: this.refreshTokenExpire, audience: [Audience.User] };
     return jwt.sign(payload, this.refreshTokenSecret, defaultOptions);
   }
-
   public validateAccessToken(token: string, options?: VerifyOptions): AccessTokenPayload {
     const defaultOptions = options || { audience: [Audience.User] };
     let payload = jwt.verify(token, this.accessTokenSecret, defaultOptions);

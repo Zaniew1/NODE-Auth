@@ -2,6 +2,7 @@ import cookieParser from "cookie-parser";
 import express from "express";
 import { authRouter } from "./routes/authRoute";
 import { userRouter } from "./routes/userRoute";
+import { sessionRouter } from "./routes/sessionRoute";
 import morgan from "morgan";
 import cors from "cors";
 import errorHandler from "./middleware/errorHandler";
@@ -23,6 +24,7 @@ app.use(cookieParser());
 const apiPath = `/api/${APP_VERSION}`;
 app.use(`${apiPath}/auth`, authRouter);
 app.use(`${apiPath}/user`, authenticator, userRouter);
+app.use(`${apiPath}/session`, authenticator, sessionRouter);
 
 app.use(errorHandler);
 

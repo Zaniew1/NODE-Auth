@@ -7,7 +7,7 @@ import { JWT } from "../utils/helpers/Jwt";
 export const authenticator: RequestHandler = (req, res, next) => {
   // const accessToken = req.cookies.accessToken as string | undefined;
   const accessToken =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2NzM2MzE4NTZiYjVkYjFlZDIxYTQwYjYiLCJ1c2VySWQiOiI2NzJhNjA3OTA2MWY2OWViM2MxNTg0YTUiLCJpYXQiOjE3MzE2MDQ4NjksImV4cCI6MTczMTYwNTc2OSwiYXVkIjpbIlVzZXIiXX0.7W2EwFxZyCnwtISfseor2J8AIOqJb0yUMoQZXdt-TgY";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2NzM2MzkyMDg5NjAwZDc1MWYwZDE2NDQiLCJ1c2VySWQiOiI2NzM2MzkxOTg5NjAwZDc1MWYwZDE2M2QiLCJpYXQiOjE3MzE2MDY4MTYsImV4cCI6MTczMTYwNzcxNiwiYXVkIjpbIlVzZXIiXX0.URosMZ1Zmn52wMBxaY8WZcHRgiqI6uVmI-MFrYqLGM0";
   appAssert(accessToken, UNAUTHORIZED, "Not authorized", AppErrorCode.InvalidAccessToken);
   const payload = JWT.validateAccessToken(accessToken);
   res.locals.userId = payload.userId;
