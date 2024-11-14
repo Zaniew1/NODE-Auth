@@ -9,3 +9,8 @@ export const getUserHandler: RequestHandler = catchAsync(async (req: Request, re
   appAssert(user, NOT_FOUND, "User not found");
   res.status(OK).json(user.omitPassword());
 });
+export const deleteUserHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const user = await UserModel.findByIdAndDelete(res.locals.userId);
+  appAssert(user, NOT_FOUND, "User not found");
+  res.status(OK).json({ message: "usersuccessfully deleted" });
+});
