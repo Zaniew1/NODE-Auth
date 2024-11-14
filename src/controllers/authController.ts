@@ -2,8 +2,9 @@ import catchAsync from "../utils/helpers/catchAsync";
 import { RequestHandler, Request, Response, NextFunction } from "express";
 import registerSchema from "../utils/zodSchemas/registerSchema";
 import verificationSchema from "../utils/zodSchemas/verificationSchema";
-import loginSchema from "../utils/zodSchemas/loginSchema";
-import { createUser, loginUser, refreshAccessTokenUser, verifyUserEmail } from "../services/auth.service";
+import loginSchema, { emailSchema } from "../utils/zodSchemas/loginSchema";
+import changePassSchema from "../utils/zodSchemas/changePassSchema";
+import { createUser, loginUser, refreshAccessTokenUser, verifyUserEmail, changePassword, forgotPassword } from "../services/auth.service";
 import { CREATED, OK, UNAUTHORIZED } from "../utils/constants/http";
 import CookiesClass from "../utils/helpers/cookies";
 import { JWT } from "../utils/helpers/Jwt";
@@ -62,24 +63,32 @@ export const forgetPasswordHandler: RequestHandler = catchAsync(async (req: Requ
   });
 });
 
-export const changePasswordHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  res.status(OK).json({
-    status: "successfully changed pass",
-  });
-});
-
-export const resetPasswordHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  res.status(OK).json({
-    status: "successfully reseted password",
-  });
-});
-
 export const verifyEmailHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  console.log(req);
   const verificationCode = verificationSchema.parse(req.params.code);
   await verifyUserEmail(verificationCode);
-
   res.status(OK).json({
     status: "successfully verified email",
+  });
+});
+
+export const forgotPasswordHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const email = emailSchema.parse(req.body.email);
+  await forgotPassword(email);
+  res.status(OK).json({
+    status: "successfully send email with reset token",
+  });
+});
+export const changePasswordHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const response = changePassSchema.parse(req.body);
+  await changePassword(response);
+  return CookiesClass.clearAuthCookies(res).status(OK).json({
+    status: "successfully changed password",
+  });
+});
+export const getUserHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const response = changePassSchema.parse(req.body);
+  await changePassword(response);
+  return CookiesClass.clearAuthCookies(res).status(OK).json({
+    status: "successfully changed password",
   });
 });

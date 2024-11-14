@@ -1,13 +1,13 @@
 import { z } from "zod";
 
-const emailSchema = z
+export const emailSchema = z
   .string({
     required_error: "Name is required",
   })
   .trim()
   .min(3, "Name to short, 3 chars minimum")
   .max(50, "Name to long, 50 chars maximum");
-const passwordSchema = z
+export const passwordSchema = z
   .string({
     required_error: "Password is required",
   })

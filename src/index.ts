@@ -1,13 +1,13 @@
 import cookieParser from "cookie-parser";
 import express from "express";
 import { authRouter } from "./routes/authRoute";
+import { userRouter } from "./routes/userRoute";
 import morgan from "morgan";
 import cors from "cors";
 import errorHandler from "./middleware/errorHandler";
-import { Request, Response } from "express";
-import { OK } from "./utils/constants/http";
 import { PORT, NODE_ENV, APP_VERSION, APP_ORIGIN } from "./utils/constants/env";
 import { connectToDatabase } from "./config/db";
+import { authenticator } from "./middleware/authenticator";
 const app = express();
 
 app.use(express.json());
@@ -20,8 +20,10 @@ app.use(
   })
 );
 app.use(cookieParser());
-const authPath = `api/${APP_VERSION}/auth`;
-app.use(`/`, authRouter);
+const apiPath = `/api/${APP_VERSION}`;
+app.use(`${apiPath}/auth`, authRouter);
+app.use(`${apiPath}/user`, authenticator, userRouter);
+
 app.use(errorHandler);
 
 app.listen(PORT, async () => {
