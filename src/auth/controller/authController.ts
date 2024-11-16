@@ -1,15 +1,15 @@
-import catchAsync from "../utils/helpers/catchAsync";
+import catchAsync from "../../utils/helpers/catchAsync";
 import { RequestHandler, Request, Response, NextFunction } from "express";
-import registerSchema from "../utils/zodSchemas/registerSchema";
-import verificationSchema from "../utils/zodSchemas/verificationSchema";
-import loginSchema, { emailSchema } from "../utils/zodSchemas/loginSchema";
-import changePassSchema from "../utils/zodSchemas/changePassSchema";
-import { createUser, loginUser, refreshAccessTokenUser, verifyUserEmail, changePassword, forgotPassword } from "../services/auth.service";
-import { CREATED, OK, UNAUTHORIZED } from "../utils/constants/http";
-import CookiesClass from "../utils/helpers/cookies";
-import { JWT } from "../utils/helpers/Jwt";
-import SessionModel from "../models/session.model";
-import appAssert from "../utils/helpers/appAssert";
+import registerSchema from "../zodSchemas/registerSchema";
+import verificationSchema from "../zodSchemas/verificationSchema";
+import loginSchema, { emailSchema } from "../zodSchemas/loginSchema";
+import changePassSchema from "../zodSchemas/changePassSchema";
+import { createUser, loginUser, refreshAccessTokenUser, verifyUserEmail, changePassword, forgotPassword } from "../service/auth.service";
+import { CREATED, OK, UNAUTHORIZED } from "../../utils/constants/http";
+import CookiesClass from "../../utils/helpers/cookies";
+import { JWT } from "../../utils/helpers/Jwt";
+import SessionModel from "../../session/model/session.model";
+import appAssert from "../../utils/helpers/appAssert";
 export const registerHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   // validate data with zod
   const request = registerSchema.parse({ ...req.body, userAgent: req.headers["user-agent"] });

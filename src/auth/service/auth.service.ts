@@ -1,9 +1,9 @@
 import { newUserType } from "../zodSchemas/registerSchema";
 // import { SmtpMailer } from "../../../NODE-Mailer/mailer";
 import { loginUserType } from "../zodSchemas/loginSchema";
-import VerificationCodeModel from "../../models/verificationCode.model";
-import UserModel from "../../models/user.model";
-import SessionModel from "../../models/session.model";
+import VerificationCodeModel from "../../auth/model/verificationCode.model";
+import UserModel from "../../user/model/user.model";
+import SessionModel from "../../session/model/session.model";
 import { VerificationCodeType } from "../../types/verificationCodeManage";
 import { fiveMinutesAgo, ONE_DAY_MS, oneHourFromNow, oneYearFromNow, thirtyDaysFromNow } from "../../utils/helpers/date";
 import { JWT } from "../../utils/helpers/Jwt";

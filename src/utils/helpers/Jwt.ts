@@ -1,7 +1,7 @@
 import jwt, { SignOptions, VerifyOptions } from "jsonwebtoken";
 import Audience from "../constants/audience";
-import { UserDocument } from "../../models/user.model";
-import { SessionDocument } from "../../models/session.model";
+import { UserDocument } from "../../user/model/user.model";
+import { SessionDocument } from "../../session/model/session.model";
 import { JWT_ACCESS_EXPIRES_IN, JWT_REFRESH_SECRET, JWT_REFRESH_EXPIRES_IN, JWT_SECRET } from "../constants/env";
 import { INTERNAL_SERVER_ERROR, UNAUTHORIZED } from "../constants/http";
 import appAssert from "./appAssert";

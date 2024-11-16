@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { comparePasswords, hashPassword } from "../utils/helpers/PasswordManage";
+import { comparePasswords, hashPassword } from "../../utils/helpers/PasswordManage";
 
 export interface UserDocument extends mongoose.Document {
   email: string;

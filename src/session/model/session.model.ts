@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { thirtyDaysFromNow } from "../utils/helpers/date";
+import { thirtyDaysFromNow } from "../../utils/helpers/date";
 
 export interface SessionDocument extends mongoose.Document {
   userId: mongoose.Types.ObjectId;
