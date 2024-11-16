@@ -1,7 +1,7 @@
-import SessionModel from "../models/session.model";
-import { NOT_FOUND, OK } from "../utils/constants/http";
-import appAssert from "../utils/helpers/appAssert";
-import catchAsync from "../utils/helpers/catchAsync";
+import SessionModel from "../../models/session.model";
+import { NOT_FOUND, OK } from "../../utils/constants/http";
+import appAssert from "../../utils/helpers/appAssert";
+import catchAsync from "../../utils/helpers/catchAsync";
 import { RequestHandler, Request, Response, NextFunction } from "express";
 import z from "zod";
 

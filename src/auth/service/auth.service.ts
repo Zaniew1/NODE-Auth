@@ -1,16 +1,16 @@
-import { newUserType } from "../utils/zodSchemas/registerSchema";
+import { newUserType } from "../zodSchemas/registerSchema";
 // import { SmtpMailer } from "../../../NODE-Mailer/mailer";
-import { loginUserType } from "../utils/zodSchemas/loginSchema";
-import VerificationCodeModel from "../models/verificationCode.model";
-import UserModel from "../models/user.model";
-import SessionModel from "../models/session.model";
-import { VerificationCodeType } from "../types/verificationCodeManage";
-import { fiveMinutesAgo, ONE_DAY_MS, oneHourFromNow, oneYearFromNow, thirtyDaysFromNow } from "../utils/helpers/date";
-import { JWT } from "../utils/helpers/Jwt";
-import appAssert from "../utils/helpers/appAssert";
-import { CONFLICT, INTERNAL_SERVER_ERROR, NOT_FOUND, TOO_MANY_REQUESTS, UNAUTHORIZED } from "../utils/constants/http";
-import { APP_ORIGIN, APP_VERSION } from "../utils/constants/env";
-import { hashPassword } from "../utils/helpers/PasswordManage";
+import { loginUserType } from "../zodSchemas/loginSchema";
+import VerificationCodeModel from "../../models/verificationCode.model";
+import UserModel from "../../models/user.model";
+import SessionModel from "../../models/session.model";
+import { VerificationCodeType } from "../../types/verificationCodeManage";
+import { fiveMinutesAgo, ONE_DAY_MS, oneHourFromNow, oneYearFromNow, thirtyDaysFromNow } from "../../utils/helpers/date";
+import { JWT } from "../../utils/helpers/Jwt";
+import appAssert from "../../utils/helpers/appAssert";
+import { CONFLICT, INTERNAL_SERVER_ERROR, NOT_FOUND, TOO_MANY_REQUESTS, UNAUTHORIZED } from "../../utils/constants/http";
+import { APP_ORIGIN, APP_VERSION } from "../../utils/constants/env";
+import { hashPassword } from "../../utils/helpers/PasswordManage";
 export const createUser = async (data: newUserType) => {
   const { name, password, email, surname, userAgent } = data as newUserType;
 

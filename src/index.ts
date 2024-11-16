@@ -1,8 +1,8 @@
 import cookieParser from "cookie-parser";
 import express from "express";
-import { authRouter } from "./routes/authRoute";
-import { userRouter } from "./routes/userRoute";
-import { sessionRouter } from "./routes/sessionRoute";
+import { authRouter } from "./auth/route/authRoute";
+import { userRouter } from "./user/route/userRoute";
+import { sessionRouter } from "./session/route/sessionRoute";
 import morgan from "morgan";
 import cors from "cors";
 import errorHandler from "./middleware/errorHandler";
