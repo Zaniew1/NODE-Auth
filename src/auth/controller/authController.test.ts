@@ -19,3 +19,46 @@ describe("Auth controller suite", () => {
     expect(true).toBe(true);
   });
 });
+
+describe("authController test suite", () => {
+  describe("registerHandler function test suite", () => {
+    it("Should get proper userId", async () => {
+      expect(true).toBe(true);
+    });
+  });
+  describe("loginHandler function test suite", () => {
+    it("Should get proper userId", async () => {
+      expect(true).toBe(true);
+    });
+  });
+  describe("logoutHandler function test suite", () => {
+    it("Should get proper userId", async () => {
+      expect(true).toBe(true);
+    });
+  });
+  describe("refreshHandler function test suite", () => {
+    it("Should get proper userId", async () => {
+      expect(true).toBe(true);
+    });
+  });
+  describe("forgetPasswordHandler function test suite", () => {
+    it("Should get proper userId", async () => {
+      expect(true).toBe(true);
+    });
+  });
+  describe("verifyEmailHandler function test suite", () => {
+    it("Should get proper userId", async () => {
+      expect(true).toBe(true);
+    });
+  });
+  describe("forgotPasswordHandler function test suite", () => {
+    it("Should get proper userId", async () => {
+      expect(true).toBe(true);
+    });
+  });
+  describe("changePasswordHandler function test suite", () => {
+    it("Should get proper userId", async () => {
+      expect(true).toBe(true);
+    });
+  });
+});

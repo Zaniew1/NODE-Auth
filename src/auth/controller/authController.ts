@@ -4,7 +4,14 @@ import registerSchema from "../zodSchemas/registerSchema";
 import verificationSchema from "../zodSchemas/verificationSchema";
 import loginSchema, { emailSchema } from "../zodSchemas/loginSchema";
 import changePassSchema from "../zodSchemas/changePassSchema";
-import { createUser, loginUser, refreshAccessTokenUser, verifyUserEmail, changePassword, forgotPassword } from "../service/auth.service";
+import {
+  createUserService,
+  loginUserService,
+  refreshAccessTokenUserService,
+  verifyUserEmailService,
+  changePasswordService,
+  forgotPasswordService,
+} from "../service/auth.service";
 import { CREATED, OK, UNAUTHORIZED } from "../../utils/constants/http";
 import CookiesClass from "../../utils/helpers/cookies";
 import { JWT } from "../../utils/helpers/Jwt";
@@ -14,7 +21,7 @@ export const registerHandler: RequestHandler = catchAsync(async (req: Request, r
   // validate data with zod
   const request = registerSchema.parse({ ...req.body, userAgent: req.headers["user-agent"] });
   // create new user, accessToken and refreshToken
-  const { user, accessToken, refreshToken } = await createUser(request);
+  const { user, accessToken, refreshToken } = await createUserService(request);
   // set cookies
   return CookiesClass.setAuthCookies({ res, accessToken, refreshToken }).status(CREATED).json({
     status: "successfully create user",
@@ -26,7 +33,7 @@ export const loginHandler: RequestHandler = catchAsync(async (req: Request, res:
   // validate data with zod
   const request = loginSchema.parse({ ...req.body, userAgent: req.headers["user-agent"] });
   // validate if email and password are correct, create tokens, create session
-  const { accessToken, refreshToken } = await loginUser(request);
+  const { accessToken, refreshToken } = await loginUserService(request);
   // set cookies
   return CookiesClass.setAuthCookies({ res, accessToken, refreshToken }).status(OK).json({
     status: "successfully login",
@@ -48,7 +55,7 @@ export const logoutHandler: RequestHandler = catchAsync(async (req: Request, res
 export const refreshHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const refreshToken = req.cookies.refreshToken as string | undefined;
   appAssert(refreshToken, UNAUTHORIZED, "Missing refresh token");
-  const { accessToken, newRefreshToken } = await refreshAccessTokenUser(refreshToken);
+  const { accessToken, newRefreshToken } = await refreshAccessTokenUserService(refreshToken);
   if (newRefreshToken) {
     res.cookie("refreshToken", newRefreshToken, CookiesClass.getRefreshTokenCookieOptions());
   }
@@ -65,7 +72,7 @@ export const forgetPasswordHandler: RequestHandler = catchAsync(async (req: Requ
 
 export const verifyEmailHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const verificationCode = verificationSchema.parse(req.params.code);
-  await verifyUserEmail(verificationCode);
+  await verifyUserEmailService(verificationCode);
   res.status(OK).json({
     status: "successfully verified email",
   });
@@ -73,21 +80,14 @@ export const verifyEmailHandler: RequestHandler = catchAsync(async (req: Request
 
 export const forgotPasswordHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const email = emailSchema.parse(req.body.email);
-  await forgotPassword(email);
+  await forgotPasswordService(email);
   res.status(OK).json({
     status: "successfully send email with reset token",
   });
 });
 export const changePasswordHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const response = changePassSchema.parse(req.body);
-  await changePassword(response);
-  return CookiesClass.clearAuthCookies(res).status(OK).json({
-    status: "successfully changed password",
-  });
-});
-export const getUserHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const response = changePassSchema.parse(req.body);
-  await changePassword(response);
+  await changePasswordService(response);
   return CookiesClass.clearAuthCookies(res).status(OK).json({
     status: "successfully changed password",
   });

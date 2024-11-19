@@ -11,7 +11,7 @@ import appAssert from "../../utils/helpers/appAssert";
 import { CONFLICT, INTERNAL_SERVER_ERROR, NOT_FOUND, TOO_MANY_REQUESTS, UNAUTHORIZED } from "../../utils/constants/http";
 import { APP_ORIGIN, APP_VERSION } from "../../utils/constants/env";
 import { hashPassword } from "../../utils/helpers/PasswordManage";
-export const createUser = async (data: newUserType) => {
+export const createUserService = async (data: newUserType) => {
   const { name, password, email, surname, userAgent } = data as newUserType;
 
   // check if user exists
@@ -19,7 +19,7 @@ export const createUser = async (data: newUserType) => {
   appAssert(!userByEmail, CONFLICT, "User with that email already exists ");
 
   //  create user
-  const user = await UserModel.create({ email, password });
+  const user = await UserModel.create({ email, password, name, surname });
 
   // create verification code
   const verificationCode = await VerificationCodeModel.create({
@@ -49,7 +49,7 @@ export const createUser = async (data: newUserType) => {
   };
 };
 
-export const loginUser = async ({ password, email, userAgent }: loginUserType) => {
+export const loginUserService = async ({ password, email, userAgent }: loginUserType) => {
   const user = await UserModel.findOne({ email });
   // validate user and password
   appAssert(user, UNAUTHORIZED, "Invalid user");
@@ -72,7 +72,7 @@ export const loginUser = async ({ password, email, userAgent }: loginUserType) =
   };
 };
 
-export const refreshAccessTokenUser = async (refreshToken: string) => {
+export const refreshAccessTokenUserService = async (refreshToken: string) => {
   const payload = JWT.validateRefreshToken(refreshToken);
   appAssert(payload, UNAUTHORIZED, "Invalid refresh token");
   // find session in db
@@ -93,7 +93,7 @@ export const refreshAccessTokenUser = async (refreshToken: string) => {
     newRefreshToken,
   };
 };
-export const verifyUserEmail = async (verificationCode: string) => {
+export const verifyUserEmailService = async (verificationCode: string) => {
   // get verification code
   const validCode = await VerificationCodeModel.findOne({
     _id: verificationCode,
@@ -111,7 +111,7 @@ export const verifyUserEmail = async (verificationCode: string) => {
   };
 };
 
-export const forgotPassword = async (email: string) => {
+export const forgotPasswordService = async (email: string) => {
   //get user by email
   const user = await UserModel.findOne({ email });
   appAssert(user, NOT_FOUND, "User not found");
@@ -143,7 +143,7 @@ export type changePasswordType = {
   verificationCode: string;
   password: string;
 };
-export const changePassword = async ({ verificationCode, password }: changePasswordType) => {
+export const changePasswordService = async ({ verificationCode, password }: changePasswordType) => {
   const validCode = await VerificationCodeModel.findOne({
     _id: verificationCode,
     type: VerificationCodeType.PasswordReset,
