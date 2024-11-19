@@ -1,7 +1,8 @@
 import SessionModel from "../model/session.model";
-import { NOT_FOUND, OK } from "../../utils/constants/http";
+import { HttpErrors } from "../../utils/constants/http";
 import appAssert from "../../utils/helpers/appAssert";
 import catchAsync from "../../utils/helpers/catchAsync";
+import { Message } from "../../utils/constants/messages";
 import { RequestHandler, Request, Response, NextFunction } from "express";
 import z from "zod";
 
@@ -20,13 +21,13 @@ export const getSessionHandler: RequestHandler = catchAsync(async (req: Request,
       sort: { createdAt: -1 },
     }
   );
-  appAssert(sessions, NOT_FOUND, "Sessions not found");
+  appAssert(sessions, HttpErrors.NOT_FOUND, "Sessions not found");
   // set isCurrent key for current session
   const sessionsAndCurrentSession = sessions.map((session) => ({
     ...session.toObject(),
     ...(session.id === res.locals.sessionId && { isCurrent: true }),
   }));
-  res.status(OK).json({ sessions: sessionsAndCurrentSession });
+  res.status(HttpErrors.OK).json({ sessions: sessionsAndCurrentSession });
 });
 export const deleteSessionHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const sessionId = z.string().parse(req.body.id);
@@ -34,6 +35,6 @@ export const deleteSessionHandler: RequestHandler = catchAsync(async (req: Reque
     _id: sessionId,
     userId: res.locals.userId,
   });
-  appAssert(sessionDeleted, NOT_FOUND, "Session not found");
-  res.status(OK).json({ message: "Session successfully deleted" });
+  appAssert(sessionDeleted, HttpErrors.NOT_FOUND, Message.FAIL_SESSION_NOT_FOUND);
+  res.status(HttpErrors.OK).json({ message: Message.SUCCESS_SESSION_DELETED });
 });

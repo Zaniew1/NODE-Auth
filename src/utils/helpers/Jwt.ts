@@ -3,9 +3,10 @@ import Audience from "../constants/audience";
 import { UserDocument } from "../../user/model/user.model";
 import { SessionDocument } from "../../session/model/session.model";
 import { JWT_ACCESS_EXPIRES_IN, JWT_REFRESH_SECRET, JWT_REFRESH_EXPIRES_IN, JWT_SECRET } from "../constants/env";
-import { INTERNAL_SERVER_ERROR, UNAUTHORIZED } from "../constants/http";
+import { HttpErrors } from "../constants/http";
 import appAssert from "./appAssert";
-import AppError, { AppErrorCode } from "./appError";
+import { AppErrorCode } from "./appError";
+import { Message } from "../constants/messages";
 interface JsonWebTokenClassInterface {
   signAccessToken(id: AccessTokenPayload, options: SignOptions): string;
   signRefreshToken(id: RefreshTokenPayload, options: SignOptions): string;
@@ -37,13 +38,13 @@ class JsonWebTokenClass implements JsonWebTokenClassInterface {
   public validateAccessToken(token: string, options?: VerifyOptions): AccessTokenPayload {
     const defaultOptions = options || { audience: [Audience.User] };
     let payload = jwt.verify(token, this.accessTokenSecret, defaultOptions);
-    appAssert(payload, UNAUTHORIZED, "You are not authorized", AppErrorCode.InvalidAccessToken);
+    appAssert(payload, HttpErrors.UNAUTHORIZED, Message.FAIL_USER_NOT_AUTHORIZED, AppErrorCode.InvalidAccessToken);
     return payload as AccessTokenPayload;
   }
   public validateRefreshToken(token: string, options?: VerifyOptions): RefreshTokenPayload {
     const defaultOptions = options || { audience: [Audience.User] };
     const payload = jwt.verify(token, this.refreshTokenSecret, defaultOptions) as RefreshTokenPayload;
-    appAssert(payload, UNAUTHORIZED, "You are not authorized");
+    appAssert(payload, HttpErrors.UNAUTHORIZED, Message.FAIL_USER_NOT_AUTHORIZED);
     return payload;
   }
 }
