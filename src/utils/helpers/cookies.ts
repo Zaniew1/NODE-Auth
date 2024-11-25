@@ -1,8 +1,8 @@
 import { Response, CookieOptions } from "express";
-import { NODE_ENV } from "../constants/env";
+import { APP_ORIGIN, APP_VERSION, NODE_ENV, PORT } from "../constants/env";
 import { fifteenMinutesFromNow, thirtyDaysFromNow } from "./date";
 
-export const REFRESH_PATH = "http://localhost:5000/auth/refresh";
+export const REFRESH_PATH = `${APP_ORIGIN}:${PORT}/api/${APP_VERSION}/auth/refresh`;
 const secure = NODE_ENV !== "development";
 
 type AuthCookieParams = {

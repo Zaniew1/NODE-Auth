@@ -8,7 +8,7 @@ import { VerificationCodeType } from "../../types/verificationCodeManage";
 import { fiveMinutesAgo, ONE_DAY_MS, oneHourFromNow, oneYearFromNow, thirtyDaysFromNow } from "../../utils/helpers/date";
 import { JWT } from "../../utils/helpers/Jwt";
 import appAssert from "../../utils/helpers/appAssert";
-import { APP_ORIGIN, APP_VERSION } from "../../utils/constants/env";
+import { APP_ORIGIN, APP_VERSION, PORT } from "../../utils/constants/env";
 import { hashPassword } from "../../utils/helpers/PasswordManage";
 import { Message } from "../../utils/constants/messages";
 import { HttpErrors } from "../../utils/constants/http";
@@ -28,7 +28,7 @@ export const createUserService = async (data: newUserType) => {
     type: VerificationCodeType.EmailVerification,
     expiresAt: oneYearFromNow(),
   });
-  const url = `${APP_ORIGIN}/api/${APP_VERSION}/verify/${verificationCode._id}`;
+  const url = `${APP_ORIGIN}:${PORT}/api/${APP_VERSION}/verify/${verificationCode._id}`;
   // we send email with welcome Card component as welcome message
   // SmtpMailer.sendWelcome({ email, name, url });
 
@@ -132,7 +132,8 @@ export const forgotPasswordService = async (email: string) => {
     type: VerificationCodeType.PasswordReset,
     expiresAt,
   });
-  const url = `${APP_ORIGIN}/api/${APP_VERSION}/forgotPassword?verificationCode=${verificationCode._id}&exp=${expiresAt.getTime()}`;
+
+  const url = `${APP_ORIGIN}:${PORT}/api/${APP_VERSION}/forgotPassword?verificationCode=${verificationCode._id}&exp=${expiresAt.getTime()}`;
   // we send email with reset password
   // SmtpMailer.sendReset({ email, name, url });
   // return message

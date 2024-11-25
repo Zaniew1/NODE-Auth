@@ -7,7 +7,7 @@
     "dev": "ts-node-dev --files src/index.ts",
     "build": "tsc && cp ./package.json ./dist",
     "start": "node indes.js",
-    "test": "jest --watch"
+    "test": "jest authController.test.ts --watch"
   },
   "repository": {
     "type": "git",
@@ -41,6 +41,8 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.7",
@@ -49,6 +51,7 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/mongoose": "^5.11.97",
     "@types/morgan": "^1.9.9",
+    "babel-jest": "^29.7.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.6.2"
   }

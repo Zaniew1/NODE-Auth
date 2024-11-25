@@ -21,7 +21,7 @@ export const getSessionHandler: RequestHandler = catchAsync(async (req: Request,
       sort: { createdAt: -1 },
     }
   );
-  appAssert(sessions, HttpErrors.NOT_FOUND, "Sessions not found");
+  appAssert(sessions, HttpErrors.NOT_FOUND, Message.FAIL_SESSION_NOT_FOUND);
   // set isCurrent key for current session
   const sessionsAndCurrentSession = sessions.map((session) => ({
     ...session.toObject(),

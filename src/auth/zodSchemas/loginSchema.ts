@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const emailSchema = z
   .string({
-    required_error: "Name is required",
+    required_error: "Email is required",
   })
   .trim()
   .min(3, "Name to short, 3 chars minimum")

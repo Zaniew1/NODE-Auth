@@ -20,7 +20,6 @@ export const enum Message {
   FAIL_USER_NOT_FOUND = "User not found",
   FAIL_USER_PASSWORD_RESET = "Failed to reset password",
   FAIL_USER_NOT_AUTHORIZED = "User not authorized",
-
   FAIL_REQUESTS_TOO_MANY = "Too many requests, try again in a few minutes",
   FAIL_SESSION_EXPIRED = "Session expired",
   FAIL_SESSION_NOT_FOUND = "Session not found",

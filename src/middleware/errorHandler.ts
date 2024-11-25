@@ -9,7 +9,7 @@ import { Message } from "../utils/constants/messages";
 const handleZodError = (res: Response, error: z.ZodError) => {
   const errors = error.issues.map((err) => ({
     path: err.path.join("."),
-    message: err.message,
+    message: err.message || "Invalid input data",
   }));
 
   return res.status(HttpErrors.BAD_REQUEST).json({
