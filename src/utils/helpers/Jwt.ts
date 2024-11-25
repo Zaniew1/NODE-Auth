@@ -37,14 +37,24 @@ class JsonWebTokenClass implements JsonWebTokenClassInterface {
   }
   public validateAccessToken(token: string, options?: VerifyOptions): AccessTokenPayload {
     const defaultOptions = options || { audience: [Audience.User] };
-    let payload = jwt.verify(token, this.accessTokenSecret, defaultOptions);
-    appAssert(payload, HttpErrors.UNAUTHORIZED, Message.FAIL_USER_NOT_AUTHORIZED, AppErrorCode.InvalidAccessToken);
-    return payload as AccessTokenPayload;
+    appAssert(token, HttpErrors.UNAUTHORIZED, Message.FAIL_USER_NOT_AUTHORIZED, AppErrorCode.InvalidAccessToken);
+    let payload;
+    try {
+      payload = jwt.verify(token, this.accessTokenSecret, defaultOptions) as AccessTokenPayload;
+    } catch (error) {
+      appAssert(false, HttpErrors.UNAUTHORIZED, Message.FAIL_USER_NOT_AUTHORIZED, AppErrorCode.InvalidAccessToken);
+    }
+    return payload;
   }
   public validateRefreshToken(token: string, options?: VerifyOptions): RefreshTokenPayload {
     const defaultOptions = options || { audience: [Audience.User] };
-    const payload = jwt.verify(token, this.refreshTokenSecret, defaultOptions) as RefreshTokenPayload;
-    appAssert(payload, HttpErrors.UNAUTHORIZED, Message.FAIL_USER_NOT_AUTHORIZED);
+    appAssert(token, HttpErrors.UNAUTHORIZED, Message.FAIL_USER_NOT_AUTHORIZED);
+    let payload;
+    try {
+      payload = jwt.verify(token, this.refreshTokenSecret, defaultOptions) as RefreshTokenPayload;
+    } catch (error) {
+      appAssert(false, HttpErrors.UNAUTHORIZED, Message.FAIL_USER_NOT_AUTHORIZED, AppErrorCode.InvalidAccessToken);
+    }
     return payload;
   }
 }

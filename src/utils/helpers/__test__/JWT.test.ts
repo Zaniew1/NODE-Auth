@@ -1,42 +1,79 @@
-import jwt from "jsonwebtoken";
-import { JWT } from "../Jwt";
+import { sign, verify } from "jsonwebtoken";
+import { AccessTokenPayload, RefreshTokenPayload, JWT } from "../Jwt";
+import { AssertionError } from "node:assert";
+import { Message } from "../../constants/messages";
+jest.mock("jsonwebtoken");
+
 describe("JWT class test suite", () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    jest.restoreAllMocks();
+    (verify as jest.Mock).mockReset();
+    (sign as jest.Mock).mockReset();
   });
+
   describe("signAccessToken method test suite", () => {
     it("Should return proper aceess token", async () => {
-      const payloadMock = {
-        userId: "userId",
-        sessionId: "sessionId",
+      const payloadMock: AccessTokenPayload = {
+        userId: "672b50c01df576319309286e",
+        sessionId: "67290b913991ecf85c227fb9",
       };
-      const mockedSignMethod = jest.spyOn(jwt, "sign") as jest.Mock;
-      const MockedSignMethodValue = mockedSignMethod.mockResolvedValue("token");
+      (sign as jest.Mock).mockReturnValueOnce("token");
       const signAccess = JWT.signAccessToken(payloadMock);
       expect(signAccess).toBe("token");
     });
   });
-  // describe("signRefreshToken method test suite", () => {
-  //   it("Should return uppercase", async () => {
-  //     const payloadMock = {
-  //       sessionId: "sessionId",
-  //     };
-  //     jest.spyOn(JWT, "signRefreshToken").mockReturnValue("token");
-  //     const signRefresh = JWT.signRefreshToken(payloadMock);
-  //     expect(signRefresh).toBe("token");
-  //   });
-  // });
-  describe("validateAccessToken method test suite", () => {
-    it("Should return payload if successful", async () => {
-      expect(true).toBe(true);
-    });
-    it("Should throw error if unsuccessful", async () => {
-      expect(true).toBe(true);
+  describe("signRefreshToken method test suite", () => {
+    it("Should return uppercase", async () => {
+      const payloadMock: RefreshTokenPayload = {
+        sessionId: "67290b913991ecf85c227fb9",
+      };
+      (sign as jest.Mock).mockReturnValueOnce("token");
+      const signAccess = JWT.signRefreshToken(payloadMock);
+      expect(signAccess).toBe("token");
+      (sign as jest.Mock).mockClear();
     });
   });
-  // describe("validateRefreshToken method test suite", () => {
-  //   it("Should return uppercase", async () => {
-  //     expect(true).toBe(true);
-  //   });
-  // });
+  describe("validateAccessToken method test suite", () => {
+    it("Should return payload if successful", async () => {
+      const payloadMock: AccessTokenPayload = {
+        userId: "123",
+        sessionId: "123",
+      };
+      const token =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2NzQ0YTE4OGY0NmMzNTM2YTQ3YTgwYTYiLCJ1c2VySWQiOiI2NzQ0YTE4OGY0NmMzNTM2YTQ3YTgwYTIiLCJpYXQiOjE3MzI1NTEwNDgsImV4cCI6MTczMjU1MTk0OCwiYXVkIjpbIlVzZXIiXX0.OGgHwwYygLVPGUZ3Dh2VxY9I1dXBWE6TKs_e-yk-PRo";
+      (verify as jest.Mock).mockReturnValueOnce(payloadMock);
+      const payload = JWT.validateAccessToken(token);
+      expect(payload).toBe(payloadMock);
+    });
+    it("Should throw error if no payload", () => {
+      const token = ""; // Invalid or empty token
+      const accessTokenSecret = "secret"; // Mock secret, if used
+      (verify as jest.Mock).mockImplementationOnce(() => {
+        throw new Error("jwt malformed"); // Simulate jwt.verify failure
+      });
+
+      expect(() => JWT.validateAccessToken(token)).toThrow(AssertionError);
+      expect(() => JWT.validateAccessToken(token)).toThrow("Error: " + Message.FAIL_USER_NOT_AUTHORIZED); // Adjust error message if needed
+    });
+  });
+  describe("validateRefreshToken method test suite", () => {
+    it("Should return payload if successful", async () => {
+      const payloadMock: RefreshTokenPayload = {
+        sessionId: "123",
+      };
+      const token =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2NzQ0YTE4OGY0NmMzNTM2YTQ3YTgwYTYiLCJpYXQiOjE3MzI1NTEwNDgsImV4cCI6MTczNTE0MzA0OCwiYXVkIjpbIlVzZXIiXX0.4yfgGAW5yOiDbYmxoSphPIA9X5ZNcYrWh0yMIjUKB2U";
+      (verify as jest.Mock).mockReturnValueOnce(payloadMock);
+      const payload = JWT.validateRefreshToken(token);
+      expect(payload).toBe(payloadMock);
+    });
+    it("Should throw error if no payload", () => {
+      const token = ""; // Invalid or empty token
+      (verify as jest.Mock).mockImplementationOnce(() => {
+        throw new Error("jwt malformed"); // Simulate jwt.verify failure
+      });
+      expect(() => JWT.validateRefreshToken(token)).toThrow(AssertionError);
+      expect(() => JWT.validateRefreshToken(token)).toThrow("Error: " + Message.FAIL_USER_NOT_AUTHORIZED); // Adjust error message if needed
+    });
+  });
 });
