@@ -46,14 +46,14 @@ describe("JWT class test suite", () => {
       expect(payload).toBe(payloadMock);
     });
     it("Should throw error if no payload", () => {
-      const token = ""; // Invalid or empty token
-      const accessTokenSecret = "secret"; // Mock secret, if used
+      const token = "";
+      const accessTokenSecret = "secret";
       (verify as jest.Mock).mockImplementationOnce(() => {
-        throw new Error("jwt malformed"); // Simulate jwt.verify failure
+        throw new Error("jwt malformed");
       });
 
       expect(() => JWT.validateAccessToken(token)).toThrow(AssertionError);
-      expect(() => JWT.validateAccessToken(token)).toThrow("Error: " + Message.FAIL_USER_NOT_AUTHORIZED); // Adjust error message if needed
+      expect(() => JWT.validateAccessToken(token)).toThrow("Error: " + Message.FAIL_USER_NOT_AUTHORIZED);
     });
   });
   describe("validateRefreshToken method test suite", () => {
