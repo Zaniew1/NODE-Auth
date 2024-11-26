@@ -1,5 +1,5 @@
 import "dotenv/config";
-const getEnv = (key: string, defaultVal?: string): string => {
+export const getEnv = (key: string, defaultVal?: string): string => {
   const value = process.env[key] || defaultVal;
   if (value === undefined) {
     throw new Error(`MIssing enviroment variable in .env file - ${key}`);
