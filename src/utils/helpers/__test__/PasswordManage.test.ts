@@ -1,23 +1,32 @@
 import bcrypt from "bcryptjs";
-
-// export const comparePasswords = async (passwordToValidate: string, databasePassword: string) => {
-//   return await bcrypt.compare(passwordToValidate, databasePassword).catch(() => false);
-// };
-// export const hashPassword = async (password: string, salt: number = 10) => {
-//   return await bcrypt.hash(password, salt);
-// };
+import { comparePasswords, hashPassword } from "../PasswordManage";
 
 describe("Password manage file test suite", () => {
   describe("ComparePasswords function test suite", () => {
-    it("Should return uppercase", async () => {
-      jest.spyOn(bcrypt, "compare").mockImplementation(() => "comparePasswords");
-      expect(true).toBe(true);
+    it("Should return true if passwords are the same", async () => {
+      const passToValidate = "123";
+      const passFromDb = "123";
+      let functionSpy: jest.SpyInstance = jest.spyOn(bcrypt, "compare");
+      functionSpy.mockResolvedValueOnce(true);
+      const compareResult = await comparePasswords(passToValidate, passFromDb);
+      expect(compareResult).toBe(true);
+    });
+    it("Should return false if passwords are not the same", async () => {
+      const passToValidate = "123";
+      const passFromDb = "1234";
+      let functionSpy: jest.SpyInstance = jest.spyOn(bcrypt, "compare");
+      functionSpy.mockResolvedValueOnce(false);
+      const compareResult = await comparePasswords(passToValidate, passFromDb);
+      expect(compareResult).toBe(false);
     });
   });
   describe("hashPassword function test suite", () => {
-    it("Should return uppercase", async () => {
-      jest.spyOn(bcrypt, "hash").mockImplementation(() => "hashPassword");
-      expect(bcrypt.hash).toHaveBeenCalledWith("12345678");
+    it("Should hash password", async () => {
+      const pass = "12354";
+      let functionSpy: jest.SpyInstance = jest.spyOn(bcrypt, "hash");
+      functionSpy.mockResolvedValueOnce("hashedPassword");
+      const hashResult = await hashPassword(pass);
+      expect(hashResult).toBe("hashedPassword");
     });
   });
 });
