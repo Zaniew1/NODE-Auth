@@ -7,7 +7,7 @@
     "dev": "ts-node-dev --files src/index.ts",
     "build": "tsc && cp ./package.json ./dist",
     "start": "node indes.js",
-    "test": "jest env.test.ts --watch"
+    "test": "jest cookies.test.ts --watch"
   },
   "repository": {
     "type": "git",

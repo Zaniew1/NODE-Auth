@@ -8,6 +8,7 @@ export const enum Message {
   SUCCESS_USER_VERIFIED_MAIL = "Successfully verified email",
   SUCCESS_USER_DELETED = "Successfully deleted user",
   SUCCESS_SESSION_DELETED = "Session successfully deleted",
+  SUCCESS_OK = "OK",
 
   FAIL_TOKEN_ACCESS_INVALID = "Invalid access token",
   FAIL_TOKEN_ACCESS_MISSING = "Missing access token",
