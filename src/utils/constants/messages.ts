@@ -26,4 +26,5 @@ export const enum Message {
   FAIL_SESSION_NOT_FOUND = "Session not found",
   FAIL_VERIFICATION_CODE_INVALID = "Invalid or expired verification code",
   FAIL_INTERNAL_SERVER_ERROR = "Internal server error",
+  FAIL_WRONG_SESSIONID_OR_USERID = "Wrong sessionId or userId",
 }
