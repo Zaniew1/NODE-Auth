@@ -2,6 +2,9 @@ import bcrypt from "bcryptjs";
 import { comparePasswords, hashPassword } from "../PasswordManage";
 
 describe("Password manage file test suite", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
   describe("ComparePasswords function test suite", () => {
     it("Should return true if passwords are the same", async () => {
       const passToValidate = "123";
