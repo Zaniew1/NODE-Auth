@@ -5,7 +5,7 @@ import { fifteenMinutesFromNow, thirtyDaysFromNow } from "./date";
 export const REFRESH_PATH = `${APP_ORIGIN}:${PORT}/api/${APP_VERSION}/auth/refresh`;
 const secure = NODE_ENV !== "development";
 
-type AuthCookieParams = {
+export type AuthCookieParams = {
   res: Response;
   accessToken: string;
   refreshToken: string;
