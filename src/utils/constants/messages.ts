@@ -19,6 +19,7 @@ export const enum Message {
   FAIL_USER_INVALID_PASSWORD = "Invalid Password",
   FAIL_USER_UNVERIFIED = "Faild to verify user by email",
   FAIL_USER_NOT_FOUND = "User not found",
+  FAIL_USER_PASSWORD_HASH = "Failed to hash password",
   FAIL_USER_PASSWORD_RESET = "Failed to reset password",
   FAIL_USER_NOT_AUTHORIZED = "User not authorized",
   FAIL_REQUESTS_TOO_MANY = "Too many requests, try again in a few minutes",

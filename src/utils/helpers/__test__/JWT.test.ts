@@ -1,7 +1,9 @@
-import { sign, verify } from "jsonwebtoken";
+import jwt, { sign, verify } from "jsonwebtoken";
 import { AccessTokenPayload, RefreshTokenPayload, JWT } from "../Jwt";
 import { AssertionError } from "node:assert";
 import { Message } from "../../constants/messages";
+import AppError, { AppErrorCode } from "../appError";
+import { HttpErrors } from "../../constants/http";
 jest.mock("jsonwebtoken");
 
 describe("JWT class test suite", () => {
@@ -23,7 +25,7 @@ describe("JWT class test suite", () => {
     });
   });
   describe("signRefreshToken method test suite", () => {
-    it("Should return uppercase", async () => {
+    it("Should  return proper aceess token", async () => {
       const payloadMock: RefreshTokenPayload = {
         sessionId: "67290b913991ecf85c227fb9",
       };
@@ -46,10 +48,15 @@ describe("JWT class test suite", () => {
       expect(payload).toBe(payloadMock);
     });
     it("Should throw error if no payload", () => {
-      const token = "";
+      const token =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2NzQ0YTE4OGY0NmMzNTM2YTQ3YTgwYTYiLCJ1c2VySWQiOiI2NzQ0YTE4OGY0NmMzNTM2YTQ3YTgwYTIiLCJpYXQiOjE3MzI1NTEwNDgsImV4cCI6MTczMjU1MTk0OCwiYXVkIjpbIlVzZXIiXX0.OGgHwwYygLVPGUZ3Dh2VxY9I1dXBWE6TKs_e-yk-PRo";
       const accessTokenSecret = "secret";
+      let findSpy: jest.SpyInstance = jest.spyOn(jwt, "verify").mockImplementationOnce(() => {
+        throw new AppError(HttpErrors.UNAUTHORIZED, Message.FAIL_USER_NOT_AUTHORIZED, AppErrorCode.InvalidAccessToken);
+      });
+
       (verify as jest.Mock).mockImplementationOnce(() => {
-        throw new Error("jwt malformed");
+        throw new AppError(HttpErrors.UNAUTHORIZED, Message.FAIL_USER_NOT_AUTHORIZED, AppErrorCode.InvalidAccessToken);
       });
 
       expect(() => JWT.validateAccessToken(token)).toThrow(AssertionError);
@@ -69,8 +76,12 @@ describe("JWT class test suite", () => {
     });
     it("Should throw error if no payload", () => {
       const token = ""; // Invalid or empty token
+      let findSpy: jest.SpyInstance = jest.spyOn(jwt, "verify").mockImplementationOnce(() => {
+        throw new AppError(HttpErrors.UNAUTHORIZED, Message.FAIL_USER_NOT_AUTHORIZED, AppErrorCode.InvalidAccessToken);
+      });
+
       (verify as jest.Mock).mockImplementationOnce(() => {
-        throw new Error("jwt malformed"); // Simulate jwt.verify failure
+        throw new AppError(HttpErrors.UNAUTHORIZED, Message.FAIL_USER_NOT_AUTHORIZED, AppErrorCode.InvalidAccessToken);
       });
       expect(() => JWT.validateRefreshToken(token)).toThrow(AssertionError);
       expect(() => JWT.validateRefreshToken(token)).toThrow("Error: " + Message.FAIL_USER_NOT_AUTHORIZED); // Adjust error message if needed
