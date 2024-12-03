@@ -39,7 +39,7 @@ describe("authController test suite", () => {
   beforeAll(() => {
     jest.clearAllMocks();
   });
-  describe.skip("registerHandler function test suite", () => {
+  describe("registerHandler function test suite", () => {
     it("Should register user", async () => {
       const reqMock = mockRequest() as Request;
       const resMock = mockResponse() as Response;

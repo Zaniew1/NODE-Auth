@@ -75,7 +75,7 @@ describe("sessionController test suite", () => {
       expect(resMock.locals.sessionId).toBe("67290b913991ecf85c227fb9");
       expect(resMock.status).toHaveBeenCalledWith(HttpErrors.OK);
       expect(resMock.json).toHaveBeenCalledWith({
-        sessions: [{ ...sessionMock }],
+        sessions: [{ ...sessionMock, isCurrent: true }],
       });
     });
   });

@@ -9,6 +9,7 @@ export const hashPassword = async (password: string, salt: number = 10) => {
   try {
     return await bcrypt.hash(password, salt);
   } catch (err) {
-    appAssert(!err, HttpErrors.NOT_FOUND, Message.FAIL_INTERNAL_SERVER_ERROR);
+    appAssert(!err, HttpErrors.INTERNAL_SERVER_ERROR, Message.FAIL_INTERNAL_SERVER_ERROR);
+    return undefined;
   }
 };
