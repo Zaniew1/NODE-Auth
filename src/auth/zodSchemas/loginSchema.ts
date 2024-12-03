@@ -5,8 +5,8 @@ export const emailSchema = z
     required_error: "Email is required",
   })
   .trim()
-  .min(3, "Name to short, 3 chars minimum")
-  .max(50, "Name to long, 50 chars maximum");
+  .min(3, "Email to short, 3 chars minimum")
+  .max(50, "Email to long, 50 chars maximum");
 export const passwordSchema = z
   .string({
     required_error: "Password is required",

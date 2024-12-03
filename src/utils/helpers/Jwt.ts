@@ -41,8 +41,7 @@ class JsonWebTokenClass implements JsonWebTokenClassInterface {
     try {
       payload = jwt.verify(token, this.accessTokenSecret, defaultOptions) as AccessTokenPayload;
     } catch (error) {
-      console.log(error);
-      appAssert(false, HttpErrors.UNAUTHORIZED, Message.FAIL_USER_NOT_AUTHORIZED, AppErrorCode.InvalidAccessToken);
+      appAssert(false, HttpErrors.UNAUTHORIZED, Message.FAIL_TOKEN_ACCESS_INVALID, AppErrorCode.InvalidAccessToken);
     }
     return payload;
   }
