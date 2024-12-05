@@ -28,9 +28,11 @@ app.use(`${apiPath}/session`, authenticator, sessionRouter);
 
 app.use(errorHandler);
 
-app.listen(PORT, async () => {
-  console.log("Server running on port: " + PORT + " on " + NODE_ENV + " environment");
-  await connectToDatabase();
-});
+if (NODE_ENV !== "test") {
+  app.listen(PORT, async () => {
+    console.log("Server running on port: " + PORT + " on " + NODE_ENV + " environment");
+    await connectToDatabase();
+  });
+}
 
 export default app;
