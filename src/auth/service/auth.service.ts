@@ -133,10 +133,9 @@ export const forgotPasswordService = async (email: string) => {
     expiresAt,
   });
 
-  const url = `${APP_ORIGIN}:${PORT}/api/${APP_VERSION}/changePassword?verificationCode=${verificationCode._id}&exp=${expiresAt.getTime()}`;
+  const url = `${APP_ORIGIN}:${PORT}/api/${APP_VERSION}/auth/changePassword?verificationCode=${verificationCode._id}&exp=${expiresAt.getTime()}`;
   // we send email with reset password
   // SmtpMailer.sendReset({ email, name, url });
-  // return message
   return {
     url,
   };

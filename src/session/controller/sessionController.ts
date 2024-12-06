@@ -4,7 +4,6 @@ import appAssert from "../../utils/helpers/appAssert";
 import catchAsync from "../../utils/helpers/catchAsync";
 import { Message } from "../../utils/constants/messages";
 import { RequestHandler, Request, Response, NextFunction } from "express";
-import z from "zod";
 import { objectIdSchema } from "../../auth/zodSchemas/ObjectIdSchema";
 
 export const getSessionHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {

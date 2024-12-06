@@ -1,4 +1,4 @@
-import jwt, { SignOptions, VerifyOptions } from "jsonwebtoken";
+import jwt, { JsonWebTokenError, SignOptions, VerifyOptions } from "jsonwebtoken";
 import Audience from "../constants/audience";
 import { UserDocument } from "../../user/model/user.model";
 import { SessionDocument } from "../../session/model/session.model";
@@ -50,7 +50,7 @@ class JsonWebTokenClass implements JsonWebTokenClassInterface {
     let payload;
     try {
       payload = jwt.verify(token, this.refreshTokenSecret, defaultOptions) as RefreshTokenPayload;
-    } catch (error) {
+    } catch (error: any) {
       appAssert(false, HttpErrors.UNAUTHORIZED, Message.FAIL_USER_NOT_AUTHORIZED, AppErrorCode.InvalidAccessToken);
     }
     return payload;

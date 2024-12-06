@@ -5,7 +5,7 @@ import SessionModel from "../session/model/session.model";
 import { JWT } from "../utils/helpers/Jwt";
 import { Message } from "../utils/constants/messages";
 import { HttpErrors } from "../utils/constants/http";
-import VerificationCodeModel from "../auth/model/verificationCode.model";
+import VerificationCodeModel, { VerificationCodeDocument } from "../auth/model/verificationCode.model";
 import { VerificationCodeType } from "../types/verificationCodeManage";
 import { oneYearFromNow, oneHourFromNow } from "../utils/helpers/date";
 let mockToken: string;
@@ -36,7 +36,7 @@ let mockVerificateEmailCode: any;
 describe("Auth controller E2E tests", () => {
   describe("[POST] - REGISTER USER ", () => {
     it("Should throw validation user", async () => {
-      const res = await request(app).post(registerPath).send({
+      const res = await agent(app).post(registerPath).send({
         name: "test",
         email: "test123@gmail.com",
         password: "e2etest1@#",
@@ -46,7 +46,7 @@ describe("Auth controller E2E tests", () => {
       expect(JSON.parse(res.text).errors[0].message).toBe("Confirm password is required");
     });
     it("Should add user", async () => {
-      const res = await request(app).post(registerPath).send({
+      const res = await agent(app).post(registerPath).send({
         name: "test",
         email: "tes1t1213@gmail.com",
         password: "e2etest1@#",
@@ -79,7 +79,7 @@ describe("Auth controller E2E tests", () => {
 
   describe("[POST] - LOGIN USER ", () => {
     it("Should throw validation error", async () => {
-      const res = await request(app).post(loginPath).send({
+      const res = await agent(app).post(loginPath).send({
         email: "tes1t1213@gmail.com",
       });
       expect(JSON.parse(res.text).errors[0].path).toBe("password");
@@ -87,12 +87,28 @@ describe("Auth controller E2E tests", () => {
       expect(res.statusCode).toBe(HttpErrors.BAD_REQUEST);
     });
     it("Should login user", async () => {
-      const res = await request(app).post(loginPath).send({
+      const res = await agent(app).post(loginPath).send({
         email: "tes1t1213@gmail.com",
         password: "e2etest1@#",
       });
       expect(res.statusCode).toBe(HttpErrors.OK);
       expect(res.body.message).toBe(Message.SUCCESS_USER_LOGIN);
+    });
+  });
+
+  describe("[GET] - REFRESH USER ", () => {
+    it("Should throw validation error", async () => {
+      const res = await agent(app).get(refreshPath).set("Cookie", [``]).send({});
+      console.log(res);
+      expect(res.statusCode).toBe(HttpErrors.INTERNAL_SERVER_ERROR);
+    });
+    it("Should refresh user's tokens (access, refresh - if is expired)", async () => {
+      const res = await agent(app)
+        .get(refreshPath)
+        .set("Cookie", [`accessToken=${mockAccessToken};refreshToken=${mockRefreshToken}`])
+        .send({});
+      expect(res.statusCode).toBe(HttpErrors.OK);
+      expect(res.body.message).toBe(Message.SUCCESS_USER_REFRESHED_TOKEN);
     });
   });
 
@@ -111,19 +127,10 @@ describe("Auth controller E2E tests", () => {
     });
   });
 
-  describe.skip("[POST] - CHANGE PASSWORD OF USER ", () => {
-    it("Should throw validation error", async () => {});
-    it("Should add user", async () => {});
-  });
-
-  describe.skip("[PATCH] - FORGOT PASSWORD ", () => {
-    it("Should throw validation error", async () => {
-      const res = await agent(app).patch(forgotPassPath).send({});
-      expect(res.statusCode).toBe(HttpErrors.NOT_FOUND);
-    });
+  describe("[PATCH] - FORGOT PASSWORD ", () => {
     it("Should send mail with verificationCode", async () => {
       const res = await agent(app).patch(forgotPassPath).send({
-        email: "test123@gmail.com",
+        email: mockUser.email,
       });
       const expiresAt = oneHourFromNow();
       mockVerificationCode = await VerificationCodeModel.create({
@@ -131,11 +138,34 @@ describe("Auth controller E2E tests", () => {
         type: VerificationCodeType.PasswordReset,
         expiresAt,
       });
-      expect(res.statusCode).toBe(HttpErrors.OK);
-      // expect(res.statusCode).toBe(Message.SUCCESS_USER_FORGET_PASSWORD);
+      // expect(res.statusCode).toBe(HttpErrors.OK);
+      expect(res.body.message).toBe(Message.SUCCESS_USER_FORGET_PASSWORD);
+    });
+    it("Should throw validation error", async () => {
+      const res = await agent(app).patch(forgotPassPath).send({ email: "" });
+      expect(res.statusCode).toBe(HttpErrors.BAD_REQUEST);
+      expect(JSON.parse(res.body.message)[0].message).toBe("Email to short, 3 chars minimum");
     });
   });
 
+  describe("[POST] - CHANGE PASSWORD FOR USER ", () => {
+    it("Should throw validation error", async () => {
+      const res = await agent(app).post(changePassPath).send({
+        verificationCode: "",
+        password: "newPassword1@#",
+      });
+      expect(res.statusCode).toBe(HttpErrors.BAD_REQUEST);
+      expect(JSON.parse(res.body.message)[0].message).toBe("Verification code is minimum 1 char");
+    });
+    it("Should change password for user", async () => {
+      const res = await agent(app).post(changePassPath).send({
+        verificationCode: mockVerificationCode._id,
+        password: "newPassword1@#",
+      });
+      expect(res.statusCode).toBe(HttpErrors.OK);
+      expect(res.body.message).toBe(Message.SUCCESS_USER_CHANGED_PASSWORD);
+    });
+  });
   describe("[GET] - VERIFY USER ", () => {
     it("Should throw validation error", async () => {
       const res = await agent(app)
@@ -150,10 +180,5 @@ describe("Auth controller E2E tests", () => {
       expect(res.statusCode).toBe(HttpErrors.OK);
       expect(res.body.message).toBe(Message.SUCCESS_USER_VERIFIED_MAIL);
     });
-  });
-
-  describe.skip("[GET] - REFRESH USER ", () => {
-    it("Should throw validation error", async () => {});
-    it("Should verify user's email", async () => {});
   });
 });
