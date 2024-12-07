@@ -27,10 +27,9 @@ export const getSessionHandler: RequestHandler = catchAsync(async (req: Request,
   appAssert(sessions.length > 0, HttpErrors.NOT_FOUND, Message.FAIL_SESSION_NOT_FOUND);
   // set isCurrent key for current session
 
-  //////////////////// TU NIE JEST MOCKOWANE
   const sessionsAndCurrentSession = sessions.map((session) => ({
     ...session,
-    ...(session.id === sessionID && { isCurrent: true }),
+    ...(session._id === sessionID && { isCurrent: true }),
   }));
   res.status(HttpErrors.OK).json({ sessions: sessionsAndCurrentSession });
 });

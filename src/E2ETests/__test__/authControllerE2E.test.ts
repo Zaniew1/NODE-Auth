@@ -1,16 +1,11 @@
-import request, { agent } from "supertest";
+import { agent } from "supertest";
 import { connectDb, closeDb } from "./db-handler";
-import app from "../index";
-import SessionModel from "../session/model/session.model";
-import { JWT } from "../utils/helpers/Jwt";
-import { Message } from "../utils/constants/messages";
-import { HttpErrors } from "../utils/constants/http";
-import VerificationCodeModel, { VerificationCodeDocument } from "../auth/model/verificationCode.model";
-import { VerificationCodeType } from "../types/verificationCodeManage";
-import { oneYearFromNow, oneHourFromNow } from "../utils/helpers/date";
-let mockToken: string;
-let sessionId: string;
-let userId: string;
+import app from "../../index";
+import { Message } from "../../utils/constants/messages";
+import { HttpErrors } from "../../utils/constants/http";
+import VerificationCodeModel from "../../auth/model/verificationCode.model";
+import { VerificationCodeType } from "../../types/verificationCodeManage";
+import { oneYearFromNow, oneHourFromNow } from "../../utils/helpers/date";
 beforeAll(async () => {
   await connectDb();
 });

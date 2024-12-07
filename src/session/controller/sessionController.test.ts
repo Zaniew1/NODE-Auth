@@ -60,12 +60,28 @@ describe("sessionController test suite", () => {
       const mockNext: NextFunction = jest.fn();
       resMock.locals.userId = "67290b913991ecf85c227fb9";
       resMock.locals.sessionId = "67290b913991ecf85c227fb9";
+      const sessionMock = {
+        _id: "67290b913991ecf85c227fb9",
+        userId: "67290b913991ecf85c227fb9",
+        userAgent: "MockAgent",
+        createdAt: "2024-11-04T17:59:45.493+00:00",
+        expiresAt: "2024-12-04T17:59:45.493+00:00",
+      };
+      const sessionMock2 = {
+        _id: "67290b913991ecf8512312312",
+        userId: "67290b913991ecf812312312",
+        userAgent: "MockAgent",
+        createdAt: "2024-11-04T17:59:45.493+00:00",
+        expiresAt: "2024-12-04T17:59:45.493+00:00",
+      };
+      const current = { isCurrent: true };
+      let findSpy: jest.SpyInstance = jest.spyOn(SessionModel, "find").mockResolvedValueOnce([sessionMock, sessionMock2]);
 
-      let findSpy: jest.SpyInstance = jest.spyOn(SessionModel, "find").mockResolvedValueOnce([sessionMock]);
       await getSessionHandler(reqMock, resMock, mockNext);
+
       expect(mockNext).not.toHaveBeenCalled();
       expect(findSpy).toHaveBeenCalledWith(
-        { userId: "67290b913991ecf85c227fb9", expiresAt: { $gt: expect.any(Date) } },
+        { userId: sessionMock.userId, expiresAt: { $gt: expect.any(Date) } },
         { _id: 1, userAgent: 1, createdAt: 1 },
         { sort: { createdAt: -1 } }
       );
@@ -75,7 +91,7 @@ describe("sessionController test suite", () => {
       expect(resMock.locals.sessionId).toBe("67290b913991ecf85c227fb9");
       expect(resMock.status).toHaveBeenCalledWith(HttpErrors.OK);
       expect(resMock.json).toHaveBeenCalledWith({
-        sessions: [{ ...sessionMock, isCurrent: true }],
+        sessions: [{ ...current, ...sessionMock }, sessionMock2],
       });
     });
   });
