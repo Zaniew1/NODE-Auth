@@ -51,18 +51,6 @@ export const logoutHandler: RequestHandler = catchAsync(async (req: Request, res
   return CookiesClass.clearAuthCookies(res).status(HttpErrors.OK).json({ message: Message.SUCCESS_USER_LOGOUT });
 });
 
-export const refreshHandler: RequestHandler = catchAsync(async (req: Request, res: Response) => {
-  const refreshToken = req.cookies.refreshToken as string | undefined;
-  appAssert(refreshToken, HttpErrors.UNAUTHORIZED, Message.FAIL_TOKEN_REFRESH_MISSING);
-  const { accessToken, newRefreshToken } = await refreshAccessTokenUserService(refreshToken);
-  if (newRefreshToken) {
-    res.cookie("refreshToken", newRefreshToken, CookiesClass.getRefreshTokenCookieOptions());
-  }
-  res.status(HttpErrors.OK).cookie("accessToken", accessToken, CookiesClass.getAccessTokenCookieOptions()).json({
-    message: Message.SUCCESS_USER_REFRESHED_TOKEN,
-  });
-});
-
 export const verifyEmailHandler: RequestHandler = catchAsync(async (req: Request, res: Response) => {
   const verificationCode = verificationSchema.parse(req.params.code);
   await verifyUserEmailService(verificationCode);
@@ -83,5 +71,18 @@ export const changePasswordHandler: RequestHandler = catchAsync(async (req: Requ
   await changePasswordService(response);
   return CookiesClass.clearAuthCookies(res).status(HttpErrors.OK).json({
     message: Message.SUCCESS_USER_CHANGED_PASSWORD,
+  });
+});
+
+export const refreshHandler: RequestHandler = catchAsync(async (req: Request, res: Response) => {
+  const refreshToken = req.cookies.refreshToken as string | undefined;
+  appAssert(refreshToken, HttpErrors.UNAUTHORIZED, Message.FAIL_TOKEN_REFRESH_MISSING);
+  const { accessToken, newRefreshToken } = await refreshAccessTokenUserService(refreshToken);
+  if (newRefreshToken) {
+    res.cookie("refreshToken", newRefreshToken, CookiesClass.getRefreshTokenCookieOptions());
+  }
+  console.log(newRefreshToken, accessToken);
+  res.status(HttpErrors.OK).cookie("accessToken", accessToken, CookiesClass.getAccessTokenCookieOptions()).json({
+    message: Message.SUCCESS_USER_REFRESHED_TOKEN,
   });
 });
