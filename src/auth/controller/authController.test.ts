@@ -6,17 +6,16 @@ import {
   verifyEmailHandler,
   forgotPasswordHandler,
   changePasswordHandler,
-} from "../authController";
-import * as authService from "../../service/auth.service";
+} from "./authController";
+import * as authService from "../service/auth.service";
 import { Request, Response, NextFunction } from "express";
-import { Message } from "../../../utils/constants/messages";
-import CookiesClass from "../../../utils/helpers/cookies";
-import { HttpErrors } from "../../../utils/constants/http";
+import { Message } from "../../utils/constants/messages";
+import CookiesClass from "../../utils/helpers/cookies";
+import { HttpErrors } from "../../utils/constants/http";
 import z, { ZodError } from "zod";
 import { AssertionError } from "node:assert";
-import { JWT } from "../../../utils/helpers/Jwt";
-import AppError from "../../../utils/helpers/appError";
-import SessionModel from "../../../session/model/session.model";
+import { JWT } from "../../utils/helpers/Jwt";
+import SessionModel from "../../session/model/session.model";
 const mockRequest = (): Partial<Request> => {
   return {
     headers: {
