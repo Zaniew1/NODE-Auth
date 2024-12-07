@@ -43,7 +43,6 @@ describe("User controller E2E tests", () => {
       expect(res.statusCode).toBe(HttpErrors.OK);
       expect(res.body).toBeDefined();
       expect(res.body).toMatchObject({ email: "tes1t1213@gmail.com" });
-      console.log(res.body);
     });
     it("Should throw validation error in no accessToken", async () => {
       const res = await agent(app)

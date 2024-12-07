@@ -60,7 +60,7 @@ describe("JWT class test suite", () => {
       });
 
       expect(() => JWT.validateAccessToken(token)).toThrow(AssertionError);
-      expect(() => JWT.validateAccessToken(token)).toThrow("Error: " + Message.FAIL_USER_NOT_AUTHORIZED);
+      expect(() => JWT.validateAccessToken(token)).toThrow("Error: " + Message.FAIL_TOKEN_ACCESS_INVALID);
     });
   });
   describe("validateRefreshToken method test suite", () => {

@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 import { comparePasswords, hashPassword } from "../../utils/helpers/PasswordManage";
+import { HttpErrors } from "../../utils/constants/http";
+import { Message } from "../../utils/constants/messages";
+import appAssert from "../../utils/helpers/appAssert";
 
 export interface UserDocument extends mongoose.Document {
   email: string;
@@ -26,10 +29,9 @@ userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
   }
-  const hasshedPass = (await hashPassword(this.password!)) ?? undefined;
-  if (hasshedPass) {
-    this.password = hasshedPass;
-  }
+  const hasshedPass = await hashPassword(this.password);
+  appAssert(hasshedPass, HttpErrors.INTERNAL_SERVER_ERROR, Message.FAIL_INTERNAL_SERVER_ERROR);
+  this.password = hasshedPass;
   return next();
 });
 

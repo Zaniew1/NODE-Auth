@@ -1,9 +1,8 @@
 import { Response, CookieOptions } from "express";
-import { APP_ORIGIN, APP_VERSION, NODE_ENV, PORT } from "../constants/env";
+import { APP_ORIGIN, APP_VERSION, PORT } from "../constants/env";
 import { fifteenMinutesFromNow, thirtyDaysFromNow } from "./date";
 
 export const REFRESH_PATH = `${APP_ORIGIN}:${PORT}/api/${APP_VERSION}/auth/refresh`;
-const secure = NODE_ENV !== "development";
 
 export type AuthCookieParams = {
   res: Response;
@@ -11,38 +10,41 @@ export type AuthCookieParams = {
   refreshToken: string;
 };
 
-interface CookieInterface {
-  setAuthCookies({ res, accessToken, refreshToken }: AuthCookieParams): Response;
-  clearAuthCookies(res: Response): Response;
-  getAccessTokenCookieOptions(): CookieOptions;
-  getRefreshTokenCookieOptions(): CookieOptions;
-}
+// interface CookieInterface {
+//   setAuthCookies({ res, accessToken, refreshToken }: AuthCookieParams): Response;
+//   clearAuthCookies(res: Response): Response;
+//   getAccessTokenCookieOptions(): CookieOptions;
+//   getRefreshTokenCookieOptions(): CookieOptions;
+// }
 
-class Cookies implements CookieInterface {
-  private defaultCookieOptions: CookieOptions = {
+class Cookies {
+  private static secure = true;
+
+  private static defaultCookieOptions: CookieOptions = {
     sameSite: "strict",
     httpOnly: true,
-    secure,
-  };
-  public setAuthCookies = ({ res, accessToken, refreshToken }: AuthCookieParams) => {
-    return res
-      .cookie("accessToken", accessToken, this.getAccessTokenCookieOptions())
-      .cookie("refreshToken", refreshToken, this.getRefreshTokenCookieOptions());
+    secure: Cookies.secure,
   };
 
-  public clearAuthCookies = (res: Response) => {
+  public static setAuthCookies = ({ res, accessToken, refreshToken }: AuthCookieParams) => {
+    return res
+      .cookie("accessToken", accessToken, Cookies.getAccessTokenCookieOptions())
+      .cookie("refreshToken", refreshToken, Cookies.getRefreshTokenCookieOptions());
+  };
+
+  public static clearAuthCookies = (res: Response) => {
     return res.clearCookie("accessToken").clearCookie("refreshToken", { path: REFRESH_PATH });
   };
 
-  public getAccessTokenCookieOptions = (): CookieOptions => ({
-    ...this.defaultCookieOptions,
+  public static getAccessTokenCookieOptions = (): CookieOptions => ({
+    ...Cookies.defaultCookieOptions,
     expires: fifteenMinutesFromNow(),
   });
 
-  public getRefreshTokenCookieOptions = (): CookieOptions => ({
-    ...this.defaultCookieOptions,
+  public static getRefreshTokenCookieOptions = (): CookieOptions => ({
+    ...Cookies.defaultCookieOptions,
     expires: thirtyDaysFromNow(),
     path: REFRESH_PATH,
   });
 }
-export default new Cookies();
+export default Cookies;

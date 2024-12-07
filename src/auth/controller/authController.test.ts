@@ -259,41 +259,41 @@ describe("authController test suite", () => {
       expect(resMock.json).toHaveBeenCalledWith({ message: Message.SUCCESS_USER_CHANGED_PASSWORD });
     });
   });
-});
-describe("refreshHandler function test suite", () => {
-  it("Should throw UNAUTHORIZED error if no refreshToken", async () => {
-    const reqMock = mockRequest() as Request;
-    reqMock.cookies = {};
-    const resMock = mockResponse() as Response;
-    const nextMock = jest.fn();
+  describe("refreshHandler function test suite", () => {
+    it("Should throw UNAUTHORIZED error if no refreshToken", async () => {
+      const reqMock = mockRequest() as Request;
+      reqMock.cookies = {};
+      const resMock = mockResponse() as Response;
+      const nextMock = jest.fn();
 
-    await refreshHandler(reqMock, resMock, nextMock);
-    const error = nextMock.mock.calls[0][0];
-    expect(nextMock).toHaveBeenCalled();
-    expect(error).toBeInstanceOf(AssertionError);
-  });
-  it("Should reset refresh token and accessToken", async () => {
-    const reqMock = mockRequest() as Request;
-    reqMock.cookies.refreshToken = "mockRefreshToken";
-    const resMock = {
-      status: jest.fn().mockReturnThis(), // For chaining
-      json: jest.fn().mockReturnThis(),
-      cookie: jest.fn().mockReturnThis(),
-    } as unknown as Response;
-    const nextMock = jest.fn();
-    jest
-      .spyOn(authService, "refreshAccessTokenUserService")
-      .mockResolvedValueOnce({ accessToken: "mockNewAccessToken", newRefreshToken: "mockNewRefreshToken" });
-    jest.spyOn(CookiesClass, "getRefreshTokenCookieOptions").mockReturnValue({});
-    jest.spyOn(CookiesClass, "getAccessTokenCookieOptions").mockReturnValue({});
-    await refreshHandler(reqMock, resMock, nextMock);
-    expect(resMock.status).toHaveBeenCalledWith(HttpErrors.OK);
-    expect(resMock.json).toHaveBeenCalledWith({
-      message: Message.SUCCESS_USER_REFRESHED_TOKEN,
+      await refreshHandler(reqMock, resMock, nextMock);
+      const error = nextMock.mock.calls[0][0];
+      expect(nextMock).toHaveBeenCalled();
+      expect(error).toBeInstanceOf(AssertionError);
     });
+    it("Should reset refresh token and accessToken", async () => {
+      const reqMock = mockRequest() as Request;
+      reqMock.cookies.refreshToken = "mockRefreshToken";
+      const resMock = {
+        status: jest.fn().mockReturnThis(), // For chaining
+        json: jest.fn().mockReturnThis(),
+        cookie: jest.fn().mockReturnThis(),
+      } as unknown as Response;
+      const nextMock = jest.fn();
+      jest
+        .spyOn(authService, "refreshAccessTokenUserService")
+        .mockResolvedValueOnce({ accessToken: "mockNewAccessToken", newRefreshToken: "mockNewRefreshToken" });
+      jest.spyOn(CookiesClass, "getRefreshTokenCookieOptions").mockReturnValue({});
+      jest.spyOn(CookiesClass, "getAccessTokenCookieOptions").mockReturnValue({});
+      await refreshHandler(reqMock, resMock, nextMock);
+      expect(resMock.status).toHaveBeenCalledWith(HttpErrors.OK);
+      expect(resMock.json).toHaveBeenCalledWith({
+        message: Message.SUCCESS_USER_REFRESHED_TOKEN,
+      });
 
-    expect(resMock.cookie).toHaveBeenCalledWith("refreshToken", "mockNewRefreshToken", {});
-    expect(resMock.cookie).toHaveBeenCalledWith("accessToken", "mockNewAccessToken", {});
-    expect(nextMock).not.toHaveBeenCalled();
+      expect(resMock.cookie).toHaveBeenCalledWith("refreshToken", "mockNewRefreshToken", {});
+      expect(resMock.cookie).toHaveBeenCalledWith("accessToken", "mockNewAccessToken", {});
+      expect(nextMock).not.toHaveBeenCalled();
+    });
   });
 });

@@ -1,104 +1,70 @@
 import { Response } from "express";
-import { AuthCookieParams, REFRESH_PATH } from "../cookies";
+import { REFRESH_PATH } from "../cookies";
 import CookiesClass from "../cookies";
-import { fifteenMinutesFromNow, thirtyDaysFromNow } from "../date";
-const mockCookie = jest.fn();
-const mockResponse = (): Partial<Response> => {
-  return {
-    clearCookie: jest.fn(),
-  };
+import * as DatesFunc from "../date";
+const mockRes: Partial<Response> = {
+  cookie: jest.fn().mockReturnThis(), // Mock the cookie method
+  clearCookie: jest.fn().mockReturnThis(), // Mock clearCookie method as well (for clearAuthCookies)
 };
 const accessToken = "testAccessToken";
 const refreshToken = "testRefreshToken";
-jest.mock("../cookies");
-const mockFifteenMinutesFromNow = jest.fn(() => new Date(Date.now() + 15 * 60 * 1000));
-const mockThirtyDaysFromNow = jest.fn(() => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
+
 describe("Cookie class test suite", () => {
   afterEach(() => {
     jest.restoreAllMocks();
-    (CookiesClass.getAccessTokenCookieOptions as jest.Mock).mockReset();
-    (CookiesClass.getRefreshTokenCookieOptions as jest.Mock).mockReset();
+    jest.clearAllMocks();
   });
+
   describe("setAuthCookies method test suite", () => {
-    it.skip("Should set accessToken cookie and refresToken cookie", async () => {
-      const mockRes = mockResponse();
-      (CookiesClass.getAccessTokenCookieOptions as jest.Mock).mockReturnValueOnce({
-        sameSite: "strict",
-        httpOnly: true,
-        secure: true,
-        expires: mockFifteenMinutesFromNow,
-      });
-      (CookiesClass.getRefreshTokenCookieOptions as jest.Mock).mockReturnValueOnce({
-        sameSite: "strict",
-        httpOnly: true,
-        secure: true,
-        expires: mockThirtyDaysFromNow,
-        path: "/refresh-path",
-      });
-      //   CookiesClass.setAuthCookies({ mockRes, accessToken, refreshToken } as AuthCookieParams);
-      expect(mockCookie).toHaveBeenCalledTimes(2);
+    it("Should set accessToken cookie and refresToken cookie", async () => {
+      jest.spyOn(CookiesClass, "getAccessTokenCookieOptions").mockReturnValueOnce({});
+      jest.spyOn(CookiesClass, "getRefreshTokenCookieOptions").mockReturnValueOnce({});
 
-      // Check accessToken cookie call
-      expect(mockCookie).toHaveBeenCalledWith(
-        "accessToken",
-        accessToken,
-        expect.objectContaining({
-          sameSite: "strict",
-          httpOnly: true,
-          secure: true,
-          expires: mockFifteenMinutesFromNow(),
-        })
-      );
+      CookiesClass.setAuthCookies({ res: mockRes as Response, accessToken, refreshToken });
 
-      // Check refreshToken cookie call
-      expect(mockCookie).toHaveBeenCalledWith(
-        "refreshToken",
-        refreshToken,
-        expect.objectContaining({
-          sameSite: "strict",
-          httpOnly: true,
-          secure: true,
-          expires: mockThirtyDaysFromNow(),
-          path: "/refresh-path",
-        })
-      );
+      expect(mockRes.cookie).toHaveBeenCalledWith("accessToken", accessToken, {});
+      expect(mockRes.cookie).toHaveBeenCalledWith("refreshToken", refreshToken, {});
     });
   });
   describe("clearAuthCookies method test suite", () => {
-    it.skip("Should clear accessToken cookie and refreshToken cookie", async () => {
+    it("Should clear accessToken cookie and refreshToken cookie", async () => {
       const res: Partial<Response> = {
         clearCookie: jest.fn().mockReturnThis(),
       };
+
       CookiesClass.clearAuthCookies(res as Response);
+
       expect(res.clearCookie).toHaveBeenCalledWith("accessToken");
       expect(res.clearCookie).toHaveBeenCalledWith("refreshToken", { path: REFRESH_PATH });
       expect(res.clearCookie).toHaveBeenCalledTimes(2);
     });
   });
   describe("getAccessTokenCookieOptions method test suite", () => {
-    it.skip("Should return uppercase", async () => {
+    it("Should return access token options", async () => {
+      jest.spyOn(DatesFunc, "fifteenMinutesFromNow").mockReturnValueOnce(new Date(1));
+
       const options = CookiesClass.getAccessTokenCookieOptions();
-      expect(options).toBeDefined();
-      expect(options).toBe({
+
+      expect(options).toEqual({
         sameSite: "strict",
         httpOnly: true,
         secure: true,
-        expires: mockFifteenMinutesFromNow(),
+        expires: new Date(1),
       });
     });
   });
   describe("getRefreshTokenCookieOptions method test suite", () => {
-    it.skip("Should return uppercase", async () => {
-      (fifteenMinutesFromNow as jest.Mock).mockReturnValueOnce("Date");
-      const options = CookiesClass.getRefreshTokenCookieOptions();
-      expect(options).toBeDefined();
+    it("Should return refresh token options", async () => {
+      jest.spyOn(DatesFunc, "thirtyDaysFromNow").mockReturnValueOnce(new Date(1));
 
-      expect(options).toBe({
+      const options = CookiesClass.getRefreshTokenCookieOptions();
+
+      expect(options).toEqual({
         sameSite: "strict",
         httpOnly: true,
         secure: true,
-        expires: "Date",
-        path: "/refresh-path",
+        expires: new Date(1),
+        path: REFRESH_PATH,
       });
     });
   });

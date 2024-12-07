@@ -44,7 +44,7 @@ export const loginHandler: RequestHandler = catchAsync(async (req: Request, res:
 export const logoutHandler: RequestHandler = catchAsync(async (req: Request, res: Response) => {
   const accessToken = req.cookies.accessToken as string | "";
   appAssert(accessToken, HttpErrors.UNAUTHORIZED, Message.FAIL_TOKEN_ACCESS_MISSING);
-  const payload = JWT.validateAccessToken(accessToken || "");
+  const payload = JWT.validateAccessToken(accessToken);
   // remove session from db
   await SessionModel.findByIdAndDelete(payload.sessionId);
   // clear cookies
@@ -81,7 +81,6 @@ export const refreshHandler: RequestHandler = catchAsync(async (req: Request, re
   if (newRefreshToken) {
     res.cookie("refreshToken", newRefreshToken, CookiesClass.getRefreshTokenCookieOptions());
   }
-  console.log(newRefreshToken, accessToken);
   res.status(HttpErrors.OK).cookie("accessToken", accessToken, CookiesClass.getAccessTokenCookieOptions()).json({
     message: Message.SUCCESS_USER_REFRESHED_TOKEN,
   });

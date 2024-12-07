@@ -99,7 +99,6 @@ describe("Auth controller E2E tests", () => {
   describe("[GET] - REFRESH USER ", () => {
     it("Should throw validation error", async () => {
       const res = await agent(app).get(refreshPath).set("Cookie", [``]).send({});
-      console.log(res);
       expect(res.statusCode).toBe(HttpErrors.INTERNAL_SERVER_ERROR);
     });
     it("Should refresh user's tokens (access, refresh - if is expired)", async () => {
