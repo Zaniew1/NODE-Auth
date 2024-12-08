@@ -62,10 +62,8 @@ describe("UserModel Methods", () => {
       confirmPassword: "plaintextPassword123#",
     });
     user.isModified = jest.fn().mockReturnValue(false);
-    if (!user.isModified("password")) {
-      mockNext();
-    }
-
+    jest.spyOn(user, "save").mockResolvedValue(user);
+    await user.save();
     expect(user.password).toBe("plaintextPassword123#");
     expect(mockNext).toHaveBeenCalled();
   });
