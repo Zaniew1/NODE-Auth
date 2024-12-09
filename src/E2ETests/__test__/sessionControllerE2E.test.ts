@@ -1,8 +1,8 @@
 import { agent } from "supertest";
 import { connectDb, closeDb } from "./db-handler";
-import app from "../index";
-import { HttpErrors } from "../utils/constants/http";
-import { Message } from "../utils/constants/messages";
+import app from "../../index";
+import { HttpErrors } from "../../utils/constants/http";
+import { Message } from "../../utils/constants/messages";
 let mockAccessToken: string;
 let mockRefreshToken: string;
 let mockSessionToDelete: string;

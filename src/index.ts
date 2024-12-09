@@ -6,8 +6,8 @@ import { sessionRouter } from "./session/route/sessionRoute";
 import morgan from "morgan";
 import cors from "cors";
 import errorHandler from "./middleware/errorHandler";
-import { PORT, NODE_ENV, APP_VERSION, APP_ORIGIN } from "./utils/constants/env";
-import { connectToDatabase } from "./config/db";
+import { NODE_ENV, APP_VERSION, APP_ORIGIN } from "./utils/constants/env";
+import { startServer } from "./config/server";
 import { authenticator } from "./middleware/authenticator";
 const app = express();
 
@@ -16,7 +16,7 @@ app.use(morgan(NODE_ENV));
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: APP_ORIGIN ?? "*",
+    origin: APP_ORIGIN,
     credentials: true,
   })
 );
@@ -28,11 +28,6 @@ app.use(`${apiPath}/session`, authenticator, sessionRouter);
 
 app.use(errorHandler);
 
-if (NODE_ENV !== "test") {
-  app.listen(PORT, async () => {
-    console.log("Server running on port: " + PORT + " on " + NODE_ENV + " environment");
-    await connectToDatabase();
-  });
-}
+startServer(app);
 
 export default app;

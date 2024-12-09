@@ -25,15 +25,17 @@ const userSchema = new mongoose.Schema<UserDocument>(
   }
 );
 
-userSchema.pre("save", async function (next) {
+export async function preSaveUser(this: UserDocument, next: () => void) {
   if (!this.isModified("password")) {
     return next();
   }
-  const hasshedPass = await hashPassword(this.password);
-  appAssert(hasshedPass, HttpErrors.INTERNAL_SERVER_ERROR, Message.FAIL_INTERNAL_SERVER_ERROR);
-  this.password = hasshedPass;
-  return next();
-});
+  const hashedPass = await hashPassword(this.password);
+  appAssert(hashedPass, HttpErrors.INTERNAL_SERVER_ERROR, Message.FAIL_INTERNAL_SERVER_ERROR);
+  this.password = hashedPass;
+  next();
+}
+
+userSchema.pre("save", preSaveUser);
 
 userSchema.methods.comparePassword = async function (val: string) {
   return comparePasswords(val, this.password);

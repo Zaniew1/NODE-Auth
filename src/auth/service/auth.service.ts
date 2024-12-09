@@ -82,7 +82,8 @@ export const refreshAccessTokenUserService = async (refreshToken: string) => {
   appAssert(session && session.expiresAt.getTime() > now, HttpErrors.UNAUTHORIZED, Message.FAIL_SESSION_EXPIRED);
   // refresh session if it's coming to the end (1day)
   const sessionExpiringSoon = session.expiresAt.getTime() - now <= ONE_DAY_MS;
-  if (sessionExpiringSoon) {
+  console.log(sessionExpiringSoon);
+  if (sessionExpiringSoon === true) {
     session.expiresAt = thirtyDaysFromNow();
     await session.save();
   }

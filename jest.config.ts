@@ -3,7 +3,7 @@ const config: Config.InitialOptions = {
   preset: "ts-jest",
   testEnvironment: "node",
   verbose: true,
-  testPathIgnorePatterns: ["__test__/db-handler.ts"],
+  testPathIgnorePatterns: ["__test__/db-handler.ts", "src/index.ts"],
   // collectCoverage: true,
   // collectCoverageFrom: ["<rootDir>/src/**/*.ts"],
 };

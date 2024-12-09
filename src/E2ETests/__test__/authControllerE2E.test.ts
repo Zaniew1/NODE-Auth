@@ -6,6 +6,7 @@ import { HttpErrors } from "../../utils/constants/http";
 import VerificationCodeModel from "../../auth/model/verificationCode.model";
 import { VerificationCodeType } from "../../types/verificationCodeManage";
 import { oneYearFromNow, oneHourFromNow } from "../../utils/helpers/date";
+
 beforeAll(async () => {
   await connectDb();
 });
@@ -96,7 +97,7 @@ describe("Auth controller E2E tests", () => {
       const res = await agent(app).get(refreshPath).set("Cookie", [``]).send({});
       expect(res.statusCode).toBe(HttpErrors.INTERNAL_SERVER_ERROR);
     });
-    it("Should refresh user's tokens (access, refresh - if is expired)", async () => {
+    it("Should refresh user's tokens (access, refresh - if is shorter than 1 day)", async () => {
       const res = await agent(app)
         .get(refreshPath)
         .set("Cookie", [`accessToken=${mockAccessToken};refreshToken=${mockRefreshToken}`])

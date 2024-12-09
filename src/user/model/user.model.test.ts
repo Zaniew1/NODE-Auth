@@ -1,5 +1,5 @@
 // import UserModel from "./user.model";
-import UserModel from "./user.model";
+import UserModel, { preSaveUser } from "./user.model";
 import * as passManage from "../../utils/helpers/PasswordManage";
 
 describe("User Model", () => {
@@ -42,12 +42,8 @@ describe("UserModel Methods", () => {
       password: "plaintextPassword123#",
       confirmPassword: "plaintextPassword123#",
     });
-    user.isModified = jest.fn().mockReturnValue(true);
-    if (user.isModified("password")) {
-      const hashedPass = await passManage.hashPassword(user.password);
-      user.password = hashedPass;
-      mockNext();
-    }
+    user.isModified = jest.fn(() => true);
+    await preSaveUser.call(user, mockNext);
 
     expect(user.password).toBe(hashedPassword);
     expect(mockNext).toHaveBeenCalled();
@@ -61,9 +57,9 @@ describe("UserModel Methods", () => {
       password: "plaintextPassword123#",
       confirmPassword: "plaintextPassword123#",
     });
-    user.isModified = jest.fn().mockReturnValue(false);
-    jest.spyOn(user, "save").mockResolvedValue(user);
-    await user.save();
+    user.isModified = jest.fn(() => false);
+    await preSaveUser.call(user, mockNext);
+
     expect(user.password).toBe("plaintextPassword123#");
     expect(mockNext).toHaveBeenCalled();
   });
