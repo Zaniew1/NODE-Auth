@@ -21,7 +21,6 @@ export const createUserService = async (data: newUserType) => {
 
   //  create user
   const user = await UserModel.create({ email, password, name, surname });
-
   // create verification code
   const verificationCode = await VerificationCodeModel.create({
     userId: user._id,
