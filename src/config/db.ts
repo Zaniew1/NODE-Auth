@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { MONGO_DB_PASS } from "../utils/constants/env";
-
 export const connectToDatabase = async () => {
   try {
     await mongoose.connect(MONGO_DB_PASS);
