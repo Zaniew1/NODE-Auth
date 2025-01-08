@@ -1,5 +1,4 @@
 
-# Table of contents
 
 ## Title
 NODE-AUTH
@@ -7,6 +6,7 @@ NODE-AUTH
 ## Description
 The goal of this project is to provide a microservice that will be able to provide full authentication and authorization using JWT and User Sessions. 
 Application uses both access token and refresh token for better security. User sessions are additional security precaution. User is not fully verified if he does not verify his account via email with verification code.
+All data are being cached by Redis, and whole project is containerized with Docker.
 
 ## Features
   - Authorization
