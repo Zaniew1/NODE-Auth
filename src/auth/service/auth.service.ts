@@ -12,6 +12,7 @@ import { APP_ORIGIN, APP_VERSION, PORT } from "../../utils/constants/env";
 import { hashPassword } from "../../utils/helpers/PasswordManage";
 import { Message } from "../../utils/constants/messages";
 import { HttpErrors } from "../../utils/constants/http";
+import { setCacheSession, getCacheSession } from "../../redis/session";
 export const createUserService = async (data: newUserType) => {
   const { name, password, email, surname, userAgent } = data as newUserType;
 
@@ -36,7 +37,7 @@ export const createUserService = async (data: newUserType) => {
     userId: user._id,
     userAgent: userAgent,
   });
-
+  setCacheSession(session._id, session);
   // sign access token & refresh
   const refreshToken = JWT.signRefreshToken({ sessionId: session._id });
   const accessToken = JWT.signAccessToken({ sessionId: session._id, userId: user._id });
@@ -61,6 +62,8 @@ export const loginUserService = async ({ password, email, userAgent }: loginUser
     userId,
     userAgent: userAgent,
   });
+  setCacheSession(session._id, session);
+
   const sessionInfo = { sessionId: session._id };
   // sign access token & refresh
   const refreshToken = JWT.signRefreshToken(sessionInfo);
@@ -76,6 +79,9 @@ export const refreshAccessTokenUserService = async (refreshToken: string) => {
   const payload = JWT.validateRefreshToken(refreshToken);
   appAssert(payload, HttpErrors.UNAUTHORIZED, Message.FAIL_TOKEN_REFRESH_INVALID);
   // find session in db
+  // const cacheSession = getCacheSession(payload.sessionId);
+  // if (!cacheSession) {
+  // }
   const session = await SessionModel.findById(payload.sessionId);
   const now = Date.now();
   appAssert(session && session.expiresAt.getTime() > now, HttpErrors.UNAUTHORIZED, Message.FAIL_SESSION_EXPIRED);
