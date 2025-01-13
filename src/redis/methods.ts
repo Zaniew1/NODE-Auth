@@ -14,6 +14,14 @@ export const setSessionHashKey = (id: SessionDocument["_id"]) => {
 export const setVerificationCodeHashKey = (id: VerificationCodeDocument["_id"]) => {
   return `verificationCode#${id}`;
 };
+export const replaceCacheData = async <T extends object>(key: string, field: keyof T, value: string) => {
+  try {
+    return await redisClient.HSET(key, field as string, value as string);
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
+};
 // skrypty do napisania:
 // znajdź usera po mailu
 // usuń wszystkie sesje po Userid
