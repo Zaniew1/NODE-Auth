@@ -1,9 +1,9 @@
 import { newUserType } from "../zodSchemas/registerSchema";
 // import { SmtpMailer } from "../../../NODE-Mailer/mailer";
 import { loginUserType } from "../zodSchemas/loginSchema";
-import VerificationCodeModel from "../../auth/model/verificationCode.model";
-import UserModel from "../../user/model/user.model";
-import SessionModel from "../../session/model/session.model";
+import VerificationCodeModel, { VerificationCodeDocument } from "../../auth/model/verificationCode.model";
+import UserModel, { UserDocument } from "../../user/model/user.model";
+import SessionModel, { SessionDocument } from "../../session/model/session.model";
 import { VerificationCodeType } from "../../types/verificationCodeManage";
 import { fiveMinutesAgo, ONE_DAY_MS, oneHourFromNow, oneYearFromNow, thirtyDaysFromNow } from "../../utils/helpers/date";
 import { JWT } from "../../utils/helpers/Jwt";
@@ -12,22 +12,28 @@ import { APP_ORIGIN, APP_VERSION, PORT } from "../../utils/constants/env";
 import { hashPassword } from "../../utils/helpers/PasswordManage";
 import { Message } from "../../utils/constants/messages";
 import { HttpErrors } from "../../utils/constants/http";
-import { setCacheSession, getCacheSession } from "../../redis/session";
+import { setHashCache, setUserHashKey, setSessionHashKey, setVerificationCodeHashKey, getHashCache, deleteHashCacheById } from "../../redis/methods";
+
 export const createUserService = async (data: newUserType) => {
   const { name, password, email, surname, userAgent } = data as newUserType;
 
+  //////////// REDIS - CHECK EXISTANCE /////////////
   // check if user exists
   const userByEmail = await UserModel.exists({ email });
   appAssert(!userByEmail, HttpErrors.CONFLICT, Message.FAIL_USER_EMAIL_EXIST);
-
   //  create user
   const user = await UserModel.create({ email, password, name, surname });
+  // create user cache
+  await setHashCache<UserDocument>(setUserHashKey(user._id), user.toObject());
   // create verification code
   const verificationCode = await VerificationCodeModel.create({
     userId: user._id,
     type: VerificationCodeType.EmailVerification,
     expiresAt: oneYearFromNow(),
   });
+  // create verificationCode cache
+  await setHashCache<VerificationCodeDocument>(setVerificationCodeHashKey(verificationCode._id), verificationCode.toObject());
+
   const url = `${APP_ORIGIN}:${PORT}/api/${APP_VERSION}/verify/${verificationCode._id}`;
   // we send email with welcome Card component as welcome message
   // SmtpMailer.sendWelcome({ email, name, url });
@@ -37,7 +43,9 @@ export const createUserService = async (data: newUserType) => {
     userId: user._id,
     userAgent: userAgent,
   });
-  setCacheSession(session._id, session);
+  //create session cache
+  await setHashCache<SessionDocument>(setSessionHashKey(session._id), session.toObject());
+
   // sign access token & refresh
   const refreshToken = JWT.signRefreshToken({ sessionId: session._id });
   const accessToken = JWT.signAccessToken({ sessionId: session._id, userId: user._id });
@@ -62,7 +70,7 @@ export const loginUserService = async ({ password, email, userAgent }: loginUser
     userId,
     userAgent: userAgent,
   });
-  setCacheSession(session._id, session);
+  await setHashCache<SessionDocument>(setSessionHashKey(session._id), session.toObject());
 
   const sessionInfo = { sessionId: session._id };
   // sign access token & refresh
@@ -138,6 +146,7 @@ export const forgotPasswordService = async (email: string) => {
     type: VerificationCodeType.PasswordReset,
     expiresAt,
   });
+  await setHashCache<VerificationCodeDocument>(setVerificationCodeHashKey(verificationCode._id), verificationCode.toObject());
 
   const url = `${APP_ORIGIN}:${PORT}/api/${APP_VERSION}/auth/changePassword?verificationCode=${verificationCode._id}&exp=${expiresAt.getTime()}`;
   // we send email with reset password
@@ -151,15 +160,20 @@ export type changePasswordType = {
   password: string;
 };
 export const changePasswordService = async ({ verificationCode, password }: changePasswordType) => {
-  const validCode = await VerificationCodeModel.findOne({
-    _id: verificationCode,
-    type: VerificationCodeType.PasswordReset,
-    expiresAt: { $gt: new Date() },
-  });
+  let validCode = await getHashCache<VerificationCodeDocument>(setVerificationCodeHashKey(verificationCode));
+  if (!validCode) {
+    validCode = await VerificationCodeModel.findOne({
+      _id: verificationCode,
+      type: VerificationCodeType.PasswordReset,
+      expiresAt: { $gt: new Date() },
+    });
+  }
   appAssert(validCode, HttpErrors.NOT_FOUND, Message.FAIL_VERIFICATION_CODE_INVALID);
   const updatedUser = await UserModel.findByIdAndUpdate(validCode.userId, { password: await hashPassword(password) });
   appAssert(updatedUser, HttpErrors.INTERNAL_SERVER_ERROR, Message.FAIL_USER_PASSWORD_RESET);
+  await setHashCache<UserDocument>(setUserHashKey(updatedUser._id), updatedUser.toObject());
   // delete verification code
+  await deleteHashCacheById(setVerificationCodeHashKey(verificationCode));
   await validCode.deleteOne();
   // delete all sessions
   await SessionModel.deleteMany({
