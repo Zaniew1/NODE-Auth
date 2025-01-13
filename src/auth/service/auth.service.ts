@@ -12,7 +12,15 @@ import { APP_ORIGIN, APP_VERSION, PORT } from "../../utils/constants/env";
 import { hashPassword } from "../../utils/helpers/PasswordManage";
 import { Message } from "../../utils/constants/messages";
 import { HttpErrors } from "../../utils/constants/http";
-import { setHashCache, setUserHashKey, setSessionHashKey, setVerificationCodeHashKey, getHashCache, deleteHashCacheById } from "../../redis/methods";
+import {
+  setHashCache,
+  setUserHashKey,
+  setSessionHashKey,
+  setVerificationCodeHashKey,
+  replaceCacheData,
+  getHashCache,
+  deleteHashCacheById,
+} from "../../redis/methods";
 
 export const createUserService = async (data: newUserType) => {
   const { name, password, email, surname, userAgent } = data as newUserType;
@@ -87,17 +95,17 @@ export const refreshAccessTokenUserService = async (refreshToken: string) => {
   const payload = JWT.validateRefreshToken(refreshToken);
   appAssert(payload, HttpErrors.UNAUTHORIZED, Message.FAIL_TOKEN_REFRESH_INVALID);
   // find session in db
-  // const cacheSession = getCacheSession(payload.sessionId);
-  // if (!cacheSession) {
-  // }
-  const session = await SessionModel.findById(payload.sessionId);
+  let session = await getHashCache<SessionDocument>(setSessionHashKey(payload.sessionId));
+  if (!session) {
+    session = await SessionModel.findById(payload.sessionId);
+  }
   const now = Date.now();
   appAssert(session && session.expiresAt.getTime() > now, HttpErrors.UNAUTHORIZED, Message.FAIL_SESSION_EXPIRED);
   // refresh session if it's coming to the end (1day)
   const sessionExpiringSoon = session.expiresAt.getTime() - now <= ONE_DAY_MS;
-  console.log(sessionExpiringSoon);
   if (sessionExpiringSoon === true) {
     session.expiresAt = thirtyDaysFromNow();
+    await replaceCacheData<SessionDocument>(setSessionHashKey(payload.sessionId), "expiresAt", String(thirtyDaysFromNow()));
     await session.save();
   }
   const sessionId = session._id;
