@@ -1,40 +1,59 @@
 import redisClient from "./redisClient";
 import { serializeCache, deserializeCache, FlatObject } from "./serialize";
+import { getHashCache } from "./methods";
 import { UserDocument } from "../user/model/user.model";
-type UserIdType = UserDocument["_id"];
 
-export const setCacheUser = async <T extends object>(id: UserIdType, attributes: T) => {
-  const userData = serializeCache<T>(attributes);
+/**
+ * Create key for user hash in Redis
+ *
+ * @param {UserDocument["_id"]} id
+ * @returns {string} returns redis hash -> user#123123123123123
+ */
+export const setUserHashKey = (id: UserDocument["_id"]): string => {
+  return `user#${id}`;
+};
+/**
+ * Set string in Redis where key is email and value is userID
+ *
+ * @async
+ * @param {UserDocument["_id"]} id
+ * @param {string} email
+ * @returns { Promise<string | null>} returns "OK" or null
+ */
+export const setUserUniqueEmailCache = async (id: UserDocument["_id"], email: string): Promise<string | null> => {
   try {
-    await redisClient.HSET(`user#${id}`, userData);
-    return id;
+    return await redisClient.SET(`email:${email}`, String(id));
   } catch (e) {
     console.log(e);
     return null;
   }
 };
-export const getCacheUserById = async <T extends object>(id: UserIdType) => {
+/**
+ * Get userID from Redis string where key is email and value is userID
+ *
+ * @async
+ * @param {string} email
+ * @returns {Promise<UserDocument["_id"] | null>} returns user id or null
+ */
+export const getUserIdByUniqueEmailCache = async (email: string): Promise<UserDocument["_id"] | null> => {
   try {
-    const user: FlatObject = await redisClient.HGETALL(`user#${id}`);
-    return deserializeCache<T>(user);
+    return await redisClient.GET(`email:${email}`);
   } catch (e) {
     console.log(e);
     return null;
   }
 };
-export const getCacheUserByMail = async <T extends object>(mail: string) => {
+/**
+ * Get user by its mail from Redis hash
+ *
+ * @async
+ * @param {string} email
+ * @returns {Promise<UserDocument | null>} returns user or null
+ */
+export const getUserByEmailCache = async (email: string): Promise<UserDocument | null> => {
   try {
-    // const user: FlatObject = await redisClient.HGETALL(`user#${id}`);
-    // return deserializeCache<T>(user);
-  } catch (e) {
-    console.log(e);
-    return null;
-  }
-};
-export const deleteCacheUserById = async (id: UserIdType) => {
-  try {
-    await redisClient.DEL(`user#${id}`);
-    return id;
+    const userId = await redisClient.GET(`email:${email}`);
+    return await getHashCache<UserDocument>(setUserHashKey(userId));
   } catch (e) {
     console.log(e);
     return null;

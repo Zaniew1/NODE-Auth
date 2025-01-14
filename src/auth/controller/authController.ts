@@ -6,6 +6,7 @@ import loginSchema, { emailSchema } from "../zodSchemas/loginSchema";
 import changePassSchema from "../zodSchemas/changePassSchema";
 import { Message } from "../../utils/constants/messages";
 import {
+  testSer,
   createUserService,
   loginUserService,
   refreshAccessTokenUserService,
@@ -18,7 +19,8 @@ import CookiesClass from "../../utils/helpers/cookies";
 import { JWT } from "../../utils/helpers/Jwt";
 import SessionModel from "../../session/model/session.model";
 import appAssert from "../../utils/helpers/appAssert";
-import { deleteCacheSessionById } from "../../redis/session";
+import { setSessionHashKey } from "../../redis/session";
+import { deleteHashCacheById } from "../../redis/methods";
 export const registerHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   // validate data with zod
   const request = registerSchema.parse({ ...req.body, userAgent: req.headers["user-agent"] });
@@ -47,7 +49,7 @@ export const logoutHandler: RequestHandler = catchAsync(async (req: Request, res
   appAssert(accessToken, HttpErrors.UNAUTHORIZED, Message.FAIL_TOKEN_ACCESS_MISSING);
   const payload = JWT.validateAccessToken(accessToken);
   // remove session from db
-  deleteCacheSessionById(payload.sessionId);
+  await deleteHashCacheById(setSessionHashKey(payload.sessionId));
   await SessionModel.findByIdAndDelete(payload.sessionId);
 
   // clear cookies
@@ -87,4 +89,8 @@ export const refreshHandler: RequestHandler = catchAsync(async (req: Request, re
   res.status(HttpErrors.OK).cookie("accessToken", accessToken, CookiesClass.getAccessTokenCookieOptions()).json({
     message: Message.SUCCESS_USER_REFRESHED_TOKEN,
   });
+});
+
+export const test: RequestHandler = catchAsync(async (req: Request, res: Response) => {
+  await testSer();
 });

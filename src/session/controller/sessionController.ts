@@ -5,7 +5,9 @@ import catchAsync from "../../utils/helpers/catchAsync";
 import { Message } from "../../utils/constants/messages";
 import { RequestHandler, Request, Response, NextFunction } from "express";
 import { objectIdSchema } from "../../auth/zodSchemas/ObjectIdSchema";
-import { deleteCacheSessionById } from "../../redis/session";
+// import { deleteCacheSessionById } from "../../redis/session";
+import { deleteHashCacheById } from "../../redis/methods";
+import { setSessionHashKey } from "../../redis/session";
 export const getSessionHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const userID = objectIdSchema.parse(res.locals.userId);
   const sessionID = objectIdSchema.parse(res.locals.sessionId);
@@ -39,7 +41,7 @@ export const deleteSessionHandler: RequestHandler = catchAsync(async (req: Reque
     _id: sessionId,
     userId: res.locals.userId,
   });
-  deleteCacheSessionById(Number(sessionId));
+  await deleteHashCacheById(setSessionHashKey(sessionId));
   appAssert(sessionDeleted, HttpErrors.NOT_FOUND, Message.FAIL_SESSION_NOT_FOUND);
   res.status(HttpErrors.OK).json({ message: Message.SUCCESS_SESSION_DELETED });
 });

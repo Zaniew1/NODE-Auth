@@ -12,26 +12,27 @@ import { APP_ORIGIN, APP_VERSION, PORT } from "../../utils/constants/env";
 import { hashPassword } from "../../utils/helpers/PasswordManage";
 import { Message } from "../../utils/constants/messages";
 import { HttpErrors } from "../../utils/constants/http";
-import {
-  setHashCache,
-  setUserHashKey,
-  setSessionHashKey,
-  setVerificationCodeHashKey,
-  replaceCacheData,
-  getHashCache,
-  deleteHashCacheById,
-} from "../../redis/methods";
+import { getUserIdByUniqueEmailCache, setUserHashKey, setUserUniqueEmailCache, getUserByEmailCache } from "../../redis/user";
+import { setSessionHashKey, deleteUserSessionsCache, setUserSessionsCache } from "../../redis/session";
+import { setVerificationCodeHashKey } from "../../redis/verificationCode";
+import { setHashCache, replaceCacheData, getHashCache, deleteHashCacheById } from "../../redis/methods";
+export const testSer = async () => {
+  return;
+};
 
 export const createUserService = async (data: newUserType) => {
   const { name, password, email, surname, userAgent } = data as newUserType;
 
-  //////////// REDIS - CHECK EXISTANCE /////////////
   // check if user exists
-  const userByEmail = await UserModel.exists({ email });
+  let userByEmail = await getUserIdByUniqueEmailCache(email);
+  if (!userByEmail) {
+    userByEmail = await UserModel.exists({ email });
+  }
   appAssert(!userByEmail, HttpErrors.CONFLICT, Message.FAIL_USER_EMAIL_EXIST);
   //  create user
   const user = await UserModel.create({ email, password, name, surname });
   // create user cache
+  await setUserUniqueEmailCache(user._id, email);
   await setHashCache<UserDocument>(setUserHashKey(user._id), user.toObject());
   // create verification code
   const verificationCode = await VerificationCodeModel.create({
@@ -43,6 +44,7 @@ export const createUserService = async (data: newUserType) => {
   await setHashCache<VerificationCodeDocument>(setVerificationCodeHashKey(verificationCode._id), verificationCode.toObject());
 
   const url = `${APP_ORIGIN}:${PORT}/api/${APP_VERSION}/verify/${verificationCode._id}`;
+
   // we send email with welcome Card component as welcome message
   // SmtpMailer.sendWelcome({ email, name, url });
 
@@ -52,6 +54,7 @@ export const createUserService = async (data: newUserType) => {
     userAgent: userAgent,
   });
   //create session cache
+  await setUserSessionsCache(user._id, session._id);
   await setHashCache<SessionDocument>(setSessionHashKey(session._id), session.toObject());
 
   // sign access token & refresh
@@ -67,23 +70,25 @@ export const createUserService = async (data: newUserType) => {
 };
 
 export const loginUserService = async ({ password, email, userAgent }: loginUserType) => {
-  const user = await UserModel.findOne({ email });
+  let user = await getUserByEmailCache(email);
+  if (!user) {
+    user = await UserModel.findOne({ email });
+  }
   // validate user and password
   appAssert(user, HttpErrors.UNAUTHORIZED, Message.FAIL_USER_INVALID);
   const passIsValid = user.comparePassword(password);
   appAssert(passIsValid, HttpErrors.UNAUTHORIZED, Message.FAIL_USER_INVALID_PASSWORD);
-  const userId = user._id;
   // create session
   const session = await SessionModel.create({
-    userId,
+    userId: user._id,
     userAgent: userAgent,
   });
+  await setUserSessionsCache(user._id, session._id);
   await setHashCache<SessionDocument>(setSessionHashKey(session._id), session.toObject());
-
   const sessionInfo = { sessionId: session._id };
   // sign access token & refresh
   const refreshToken = JWT.signRefreshToken(sessionInfo);
-  const accessToken = JWT.signAccessToken({ ...sessionInfo, userId });
+  const accessToken = JWT.signAccessToken({ ...sessionInfo, userId: user._id });
   return {
     user: user.omitPassword(),
     accessToken,
@@ -116,30 +121,39 @@ export const refreshAccessTokenUserService = async (refreshToken: string) => {
     newRefreshToken,
   };
 };
-export const verifyUserEmailService = async (verificationCode: string) => {
+export const verifyUserEmailService = async (verificationCode: VerificationCodeDocument["_id"]) => {
   // get verification code
-  const validCode = await VerificationCodeModel.findOne({
-    _id: verificationCode,
-    type: VerificationCodeType.EmailVerification,
-    expiresAt: { $gt: new Date() },
-  });
+  let validCode = await getHashCache<VerificationCodeDocument>(setVerificationCodeHashKey(verificationCode));
+  if (!validCode) {
+    validCode = await VerificationCodeModel.findOneAndDelete({
+      _id: verificationCode,
+    });
+  }
   appAssert(validCode, HttpErrors.NOT_FOUND, Message.FAIL_VERIFICATION_CODE_INVALID);
   // get user and set verified = true
+  await replaceCacheData<UserDocument>(setUserHashKey(validCode.userId), "verified", String(true));
   const verifiedUser = await UserModel.findByIdAndUpdate(validCode.userId, { verified: true }, { new: true });
   appAssert(verifiedUser, HttpErrors.INTERNAL_SERVER_ERROR, Message.FAIL_USER_UNVERIFIED);
   // delete verification code
   await validCode.deleteOne();
+  await deleteHashCacheById(setVerificationCodeHashKey(validCode._id));
   return {
     user: verifiedUser.omitPassword(),
   };
 };
 
 export const forgotPasswordService = async (email: string) => {
+  /////////////////////////////// TUTAJ DOROBIĆ
   //get user by email
-  const user = await UserModel.findOne({ email });
+  let user = await getUserByEmailCache(email);
+  if (!user) {
+    const user = await UserModel.findOne({ email });
+  }
   appAssert(user, HttpErrors.NOT_FOUND, Message.FAIL_USER_NOT_FOUND);
   // rate limit
   const fiveMinAgo = fiveMinutesAgo();
+
+  /////////////////////////////// TUTAJ DOROBIĆ
   const count = await VerificationCodeModel.countDocuments({
     userId: user._id,
     type: VerificationCodeType.PasswordReset,
@@ -177,13 +191,17 @@ export const changePasswordService = async ({ verificationCode, password }: chan
     });
   }
   appAssert(validCode, HttpErrors.NOT_FOUND, Message.FAIL_VERIFICATION_CODE_INVALID);
-  const updatedUser = await UserModel.findByIdAndUpdate(validCode.userId, { password: await hashPassword(password) });
+
+  const newPassword = await hashPassword(password);
+  const updatedUser = await UserModel.findByIdAndUpdate(validCode.userId, { password: newPassword });
   appAssert(updatedUser, HttpErrors.INTERNAL_SERVER_ERROR, Message.FAIL_USER_PASSWORD_RESET);
-  await setHashCache<UserDocument>(setUserHashKey(updatedUser._id), updatedUser.toObject());
   // delete verification code
+  await replaceCacheData<UserDocument>(setUserHashKey(validCode.userId), "password", newPassword);
   await deleteHashCacheById(setVerificationCodeHashKey(verificationCode));
+  await deleteUserSessionsCache(updatedUser._id);
   await validCode.deleteOne();
   // delete all sessions
+  /////////////////////////////// TUTAJ DOROBIĆ
   await SessionModel.deleteMany({
     userId: updatedUser._id,
   });
