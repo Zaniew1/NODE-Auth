@@ -20,7 +20,6 @@ import { JWT } from "../../utils/helpers/Jwt";
 import SessionModel from "../../session/model/session.model";
 import appAssert from "../../utils/helpers/appAssert";
 import { setSessionHashKey } from "../../redis/session";
-import { deleteHashCacheById } from "../../redis/methods";
 export const registerHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   // validate data with zod
   const request = registerSchema.parse({ ...req.body, userAgent: req.headers["user-agent"] });
@@ -49,7 +48,7 @@ export const logoutHandler: RequestHandler = catchAsync(async (req: Request, res
   appAssert(accessToken, HttpErrors.UNAUTHORIZED, Message.FAIL_TOKEN_ACCESS_MISSING);
   const payload = JWT.validateAccessToken(accessToken);
   // remove session from db
-  await deleteHashCacheById(setSessionHashKey(payload.sessionId));
+  // await deleteHashCacheById(setSessionHashKey(payload.sessionId));
   await SessionModel.findByIdAndDelete(payload.sessionId);
 
   // clear cookies
