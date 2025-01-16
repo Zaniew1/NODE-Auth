@@ -5,6 +5,9 @@ import { Message } from "../../utils/constants/messages";
 import appAssert from "../../utils/helpers/appAssert";
 
 export interface UserDocument extends mongoose.Document {
+  name: string;
+  surname?: string;
+  userAgent?: string;
   email: string;
   password: string;
   verified: boolean;
@@ -16,6 +19,9 @@ export interface UserDocument extends mongoose.Document {
 
 const userSchema = new mongoose.Schema<UserDocument>(
   {
+    name: { type: String, required: true },
+    surname: { type: String, required: true },
+    userAgent: { type: String },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     verified: { type: Boolean, required: true, default: false },
