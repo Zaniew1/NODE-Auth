@@ -101,17 +101,12 @@ export const refreshAccessTokenUserService = async (refreshToken: string) => {
   };
 };
 export const verifyUserEmailService = async (verificationCode: VerificationCodeDocument["_id"]) => {
-  // get verification code
-  // let validCode = await getHashCache<VerificationCodeDocument>(setVerificationCodeHashKey(verificationCode));
-  // if (!validCode) {
-  let validCode = await VerificationCodeModel.findOneAndDelete({
-    _id: verificationCode,
-  });
-  // }
+  let validCode = await DatabaseClass.verificationCode.findByIdAndDelete(verificationCode);
   appAssert(validCode, HttpErrors.NOT_FOUND, Message.FAIL_VERIFICATION_CODE_INVALID);
   // get user and set verified = true
   // await replaceCacheData<UserDocument>(setUserHashKey(validCode.userId), "verified", String(true));
-  const verifiedUser = await UserModel.findByIdAndUpdate(validCode.userId, { verified: true }, { new: true });
+  const verifiedUser = await DatabaseClass.user.findByIdAndUpdate(validCode.userId, { verified: true });
+  // const verifiedUser = await UserModel.findByIdAndUpdate(validCode.userId, { verified: true }, { new: true });
   appAssert(verifiedUser, HttpErrors.INTERNAL_SERVER_ERROR, Message.FAIL_USER_UNVERIFIED);
   // delete verification code
   await validCode.deleteOne();

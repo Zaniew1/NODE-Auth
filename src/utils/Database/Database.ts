@@ -3,9 +3,9 @@ import UserClass, { UserClassType } from "./UserDatabase";
 import VerificationCodeClass, { VerificationCodeClassType } from "./VerificationCodeDatabase";
 class Database {
   constructor(
-    public user: UserClassType = UserClass,
-    public session: SessionClassType = SessionClass,
-    public verificationCode: VerificationCodeClassType = VerificationCodeClass
+    public user: UserClassType = new UserClass(),
+    public session: SessionClassType = new SessionClass(),
+    public verificationCode: VerificationCodeClassType = new VerificationCodeClass()
   ) {}
 }
 

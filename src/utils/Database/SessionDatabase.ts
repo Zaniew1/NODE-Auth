@@ -11,7 +11,7 @@ export interface SessionClassType {
   findOneAndDelete(properties: object): Promise<SessionDocument | null>;
 }
 
-class SessionClass implements SessionClassType {
+export default class SessionClass implements SessionClassType {
   async create(properties: object): Promise<SessionDocument> {
     const session = await SessionModel.create(properties);
     await CacheClass.setHashCache<SessionDocument>(setSessionHashKey(session._id), session.toObject());
@@ -41,4 +41,3 @@ class SessionClass implements SessionClassType {
     return await SessionModel.findOneAndDelete(properties);
   }
 }
-export default new SessionClass();

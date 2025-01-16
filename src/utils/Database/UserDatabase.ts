@@ -12,7 +12,7 @@ export interface UserClassType {
   findByIdAndDelete(id: UserDocument["_id"]): Promise<UserDocument | null>;
 }
 
-class UserClass implements UserClassType {
+export default class UserClass implements UserClassType {
   async existsByEmail(email: string): Promise<UserDocument["_id"] | null> {
     let userByEmail = await CacheClass.getStringCache(setUniqueEmailStringKey(email));
     if (!userByEmail) {
@@ -34,14 +34,19 @@ class UserClass implements UserClassType {
     }
     return new UserModel(user);
   }
-  async findByIdAndUpdate(id: UserDocument["_id"], properties: object): Promise<UserDocument | null> {
+  async findByIdAndUpdate<T extends UserDocument>(id: UserDocument["_id"], properties: T): Promise<UserDocument | null> {
+    await CacheClass.setHashCache<UserDocument>(setUserHashKey(id), properties);
     return await UserModel.findByIdAndUpdate(id, properties);
   }
   async findById(id: UserDocument["_id"]): Promise<UserDocument | null> {
-    return await UserModel.findById(id);
+    const user = await CacheClass.getHashCache<UserDocument>(setUserHashKey(id));
+    if (!user) {
+      return await UserModel.findById(id);
+    }
+    return user;
   }
   async findByIdAndDelete(id: UserDocument["_id"]): Promise<UserDocument | null> {
+    await CacheClass.deleteHashCacheById(setUserHashKey(id));
     return await UserModel.findByIdAndDelete(id);
   }
 }
-export default new UserClass();
