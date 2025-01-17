@@ -11,7 +11,7 @@ export interface CacheClassType {
   deleteHashCacheById(key: string): Promise<number | null>;
   serializeCache<T extends object>(attributes: T): FlatObject;
   deserializeCache<T extends object>(flatObject: FlatObject): T;
-  setCacheList<T extends CacheListType>(key: string, listElement: T): Promise<number | null>;
+  setCacheList<T extends object>(key: string, listElement: T): Promise<number | null>;
   getCacheList(key: string): Promise<string[] | null>;
   setStringCache(key: string, value: string): Promise<string | null>;
   getStringCache(key: string): Promise<string | null>;
@@ -97,7 +97,7 @@ class Cache implements CacheClassType {
     return deserializedObj as T;
   };
 
-  public setCacheList = async <T extends CacheListType>(key: string, listElement: T): Promise<number | null> => {
+  public setCacheList = async <T>(key: string, listElement: T): Promise<number | null> => {
     try {
       return await redisClient.LPUSH(key, String(listElement));
     } catch (e) {
