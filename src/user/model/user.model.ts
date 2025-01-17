@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { ObjectId, Types } from "mongoose";
 import { comparePasswords, hashPassword } from "../../utils/helpers/PasswordManage";
 import { HttpErrors } from "../../utils/constants/http";
 import { Message } from "../../utils/constants/messages";
