@@ -2,10 +2,10 @@ name: Test Project
 on: 
   push:
     branches:
-      - 'main'
+      - 'gihubactions'
   workflow_dispatch: 
     branches:
-      - 'main'
+      - 'gihubactions'
 jobs:
   test:
     runs-on: ubuntu-latest
