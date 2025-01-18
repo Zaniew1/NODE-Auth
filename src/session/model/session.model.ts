@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
 import { thirtyDaysFromNow } from "../../utils/helpers/date";
+import { UserDocument } from "../../user/model/user.model";
 
 export interface SessionDocument extends mongoose.Document {
-  userId: mongoose.Types.ObjectId;
+  userId: UserDocument["_id"];
   userAgent?: string;
   createdAt: Date;
   expiresAt: Date;

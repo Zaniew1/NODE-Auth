@@ -1,9 +1,9 @@
 import { newUserType } from "../zodSchemas/registerSchema";
 // import { SmtpMailer } from "../../../NODE-Mailer/mailer";
 import { loginUserType } from "../zodSchemas/loginSchema";
-import VerificationCodeModel, { VerificationCodeDocument } from "../../auth/model/verificationCode.model";
+import { VerificationCodeDocument } from "../../auth/model/verificationCode.model";
 import { VerificationCodeType } from "../../types/verificationCodeManage";
-import { fiveMinutesAgo, ONE_DAY_MS, oneHourFromNow, oneYearFromNow, thirtyDaysFromNow } from "../../utils/helpers/date";
+import { ONE_DAY_MS, oneHourFromNow, oneYearFromNow, thirtyDaysFromNow } from "../../utils/helpers/date";
 import { JWT } from "../../utils/helpers/Jwt";
 import appAssert from "../../utils/helpers/appAssert";
 import { APP_ORIGIN, APP_VERSION, PORT } from "../../utils/constants/env";
@@ -11,7 +11,6 @@ import { hashPassword } from "../../utils/helpers/PasswordManage";
 import { Message } from "../../utils/constants/messages";
 import { HttpErrors } from "../../utils/constants/http";
 import DatabaseClass from "../../utils/Database/Database";
-import { UserDocument } from "../../user/model/user.model";
 export const testSer = async () => {};
 
 export const createUserService = async (data: newUserType) => {
@@ -23,7 +22,7 @@ export const createUserService = async (data: newUserType) => {
 
   // create verification code
   const verificationCode = await DatabaseClass.verificationCode.create({
-    userId: user._id as UserDocument["_id"],
+    userId: user._id,
     type: VerificationCodeType.EmailVerification,
     expiresAt: oneYearFromNow(),
   });
@@ -115,16 +114,10 @@ export const verifyUserEmailService = async (verificationCode: VerificationCodeD
 export const forgotPasswordService = async (email: string) => {
   const user = await DatabaseClass.user.findOneByMail(email);
   appAssert(user, HttpErrors.NOT_FOUND, Message.FAIL_USER_NOT_FOUND);
-  // rate limit
-  const fiveMinAgo = fiveMinutesAgo();
 
-  /////////////////////////////// TUTAJ DOROBIĆ ?!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  const count = await VerificationCodeModel.countDocuments({
-    userId: user._id,
-    type: VerificationCodeType.PasswordReset,
-    createdAt: { $gt: fiveMinAgo },
-  });
+  const count = await DatabaseClass.verificationCode.findUsersPasswordResetCodes(user._id, VerificationCodeType.PasswordReset);
   appAssert(count <= 1, HttpErrors.TOO_MANY_REQUESTS, Message.FAIL_REQUESTS_TOO_MANY);
+
   const expiresAt = oneHourFromNow();
   // create verification code
   const verificationCode = await DatabaseClass.verificationCode.create({

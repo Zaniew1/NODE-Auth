@@ -1,4 +1,3 @@
-import SessionModel from "../model/session.model";
 import { HttpErrors } from "../../utils/constants/http";
 import appAssert from "../../utils/helpers/appAssert";
 import catchAsync from "../../utils/helpers/catchAsync";

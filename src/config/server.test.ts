@@ -1,7 +1,5 @@
 import { startServer } from "./server"; // Adjust the path as needed
 import { connectToDatabase } from "./db"; // Adjust the path
-import * as dotenv from "dotenv";
-import { mocked } from "jest-mock";
 
 jest.mock("./db");
 

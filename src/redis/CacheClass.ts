@@ -1,3 +1,4 @@
+import mongoose, { ObjectId } from "mongoose";
 import { VerificationCodeDocument } from "../auth/model/verificationCode.model";
 import { SessionDocument } from "../session/model/session.model";
 import { UserDocument } from "../user/model/user.model";
@@ -14,7 +15,7 @@ export interface CacheClassType {
   setCacheList<T extends object>(key: string, listElement: T): Promise<number | null>;
   getCacheList(key: string): Promise<string[] | null>;
   setStringCache(key: string, value: string): Promise<string | null>;
-  getStringCache(key: string): Promise<string | null>;
+  getStringCache(key: string): Promise<mongoose.Types.ObjectId | null>;
 }
 
 class Cache implements CacheClassType {
@@ -66,7 +67,6 @@ class Cache implements CacheClassType {
     });
     return serializedObj;
   };
-
   public deserializeCache = <T extends object>(flatObject: FlatObject): T => {
     const deserializedObj: Partial<T> = {};
     Object.entries(flatObject).forEach(([key, value]) => {
@@ -119,9 +119,10 @@ class Cache implements CacheClassType {
       return null;
     }
   };
-  public getStringCache = async (key: string): Promise<string | null> => {
+  public getStringCache = async (key: string): Promise<mongoose.Types.ObjectId | null> => {
     try {
-      return await redisClient.GET(key);
+      const string = await redisClient.GET(key);
+      return new mongoose.Types.ObjectId(string as string);
     } catch (e) {
       console.log(e);
       return null;

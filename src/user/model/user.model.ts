@@ -5,6 +5,7 @@ import { Message } from "../../utils/constants/messages";
 import appAssert from "../../utils/helpers/appAssert";
 
 export interface UserDocument extends mongoose.Document {
+  _id: Types.ObjectId;
   name: string;
   surname?: string;
   userAgent?: string;

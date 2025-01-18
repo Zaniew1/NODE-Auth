@@ -1,7 +1,5 @@
 import { JWT } from "../../utils/helpers/Jwt";
 import SessionModel from "../../session/model/session.model";
-import { HttpErrors } from "../../utils/constants/http";
-import { Message } from "../../utils/constants/messages";
 import * as allDates from "../../utils/helpers/date";
 import { refreshAccessTokenUserService } from "./auth.service";
 describe("authService test suite", () => {

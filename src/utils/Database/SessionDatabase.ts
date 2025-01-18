@@ -29,7 +29,7 @@ export default class SessionClass implements SessionClassType {
     }
     return sessionCache;
   }
-  async deleteManyByUserId(userId: SessionDocument["_id"]): Promise<DeleteResult | null> {
+  async deleteManyByUserId(userId: UserDocument["_id"]): Promise<DeleteResult | null> {
     const sessionsId = await CacheClass.getCacheList(setSessionListKey(userId));
     if (sessionsId) {
       sessionsId.forEach(async (session) => {

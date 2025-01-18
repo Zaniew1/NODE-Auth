@@ -51,7 +51,7 @@ describe("JWT class test suite", () => {
       const token =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2NzQ0YTE4OGY0NmMzNTM2YTQ3YTgwYTYiLCJ1c2VySWQiOiI2NzQ0YTE4OGY0NmMzNTM2YTQ3YTgwYTIiLCJpYXQiOjE3MzI1NTEwNDgsImV4cCI6MTczMjU1MTk0OCwiYXVkIjpbIlVzZXIiXX0.OGgHwwYygLVPGUZ3Dh2VxY9I1dXBWE6TKs_e-yk-PRo";
       const accessTokenSecret = "secret";
-      let findSpy: jest.SpyInstance = jest.spyOn(jwt, "verify").mockImplementationOnce(() => {
+      jest.spyOn(jwt, "verify").mockImplementationOnce(() => {
         throw new AppError(HttpErrors.UNAUTHORIZED, Message.FAIL_USER_NOT_AUTHORIZED, AppErrorCode.InvalidAccessToken);
       });
 

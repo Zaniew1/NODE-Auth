@@ -5,6 +5,8 @@ import { RequestHandler, Request, Response, NextFunction } from "express";
 import { Message } from "../../utils/constants/messages";
 import { objectIdSchema } from "../../auth/zodSchemas/ObjectIdSchema";
 import DatabaseClass from "../../utils/Database/Database";
+import { UserDocument } from "../model/user.model";
+import mongoose from "mongoose";
 
 export const getUserHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const userID = objectIdSchema.parse(res.locals.userId);

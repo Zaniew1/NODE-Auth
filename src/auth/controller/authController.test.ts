@@ -16,7 +16,6 @@ import z, { ZodError } from "zod";
 import { AssertionError } from "node:assert";
 import { JWT } from "../../utils/helpers/Jwt";
 import SessionModel from "../../session/model/session.model";
-import AppError from "../../utils/helpers/appError";
 const mockRequest = (): Partial<Request> => {
   return {
     headers: {
