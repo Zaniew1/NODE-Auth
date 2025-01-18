@@ -18,6 +18,8 @@ jobs:
       - name: Install dependencies
         run: npm ci 
       - name: Run tests
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: npm run test
       - name: Run test coverage
         run: npm run coverage
