@@ -4,35 +4,54 @@ on:
     branches:
       - 'gihubactions'
   workflow_dispatch: 
-    branches:
-      - 'gihubactions'
-env:
-  NODE_ENV: dev
-  PORT: 5000
-  JWT_EXPIRES_IN: 24h
-  APP_VERSION: v1.1.1
-  APP_ORIGIN: http://localhost
+
+
 jobs:
   test:
+    environment: node-auth-envs
     runs-on: ubuntu-latest
     steps:
       - name: Download code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+      - name: Cache dependencies
+        uses: action/cache@v4
+        with:
+          path: ~/.npm
+          key: dependencies-modules-${{ hashFiles('**/package-lock.json') }}
       - name: Install dependencies
         run: npm ci 
       - name: Run tests
         run: npm run test
-  coverage:
+      - name: Run test coverage
+        run: npm run coverage
+  build: 
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - name: Run test coverage
-        run: npm run coverage
-  deploy: 
-    needs: [test, coverage]
-    runs-on: ubuntu-latest
-    steps:  
+      - name: Download code
+        uses: actions/checkout@v4
+      - name: Cache dependencies
+        uses: action/cache@v4
+        with:
+          path: ~/.npm
+          key: dependencies-modules-${{ hashFiles('**/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci 
       - name: Build project
         run: npm run build
+      - name: Upload arifacts
+        uses: actions/upload-artifact@v4
+        with: 
+          name: dist-files
+          path: dist
+  deploy: 
+    needs: [test,build]
+    runs-on: ubuntu-latest
+      - name: Get build artifacts
+        uses: actions/download-artifact@v4
+        with: 
+          name: dist-files
+      - name: Show content
+        run: ls
       - name: Deploy
         run: echo "Deploying on server -dockerhub or AWS or K8s"
