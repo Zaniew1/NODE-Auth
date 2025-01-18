@@ -9,9 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
       - name: Cache dependencies
-        uses: action/cache@v4
+        uses: action/cache@v3
         with:
           path: ~/.npm
           key: dependencies-modules-${{ hashFiles('**/package-lock.json') }}
@@ -26,9 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
       - name: Cache dependencies
-        uses: action/cache@v4
+        uses: action/cache@v3
         with:
           path: ~/.npm
           key: dependencies-modules-${{ hashFiles('**/package-lock.json') }}
@@ -37,7 +37,7 @@ jobs:
       - name: Build project
         run: npm run build
       - name: Upload arifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with: 
           name: dist-files
           path: dist
@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with: 
           name: dist-files
       - name: Show content
