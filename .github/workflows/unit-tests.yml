@@ -19,7 +19,17 @@ jobs:
         run: npm ci 
       - name: Run tests
         env:
+          APP_ORIGIN: ${{ secrets.APP_ORIGIN }}
+          APP_VERSION: ${{ secrets.APP_VERSION }}
+          JWT_EXPIRES_IN: ${{ secrets.JWT_EXPIRES_IN }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          MONGO_DB_PASS: ${{ secrets.MONGO_DB_PASS }}
+          NODE_ENV: ${{ secrets.NODE_ENV }}
+          PORT: ${{ secrets.PORT }}
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          REDIS_PASS: ${{ secrets.REDIS_PASS }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
         run: npm run test
       - name: Run test coverage
         run: npm run coverage
