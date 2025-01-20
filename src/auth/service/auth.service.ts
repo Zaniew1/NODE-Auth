@@ -11,7 +11,23 @@ import { hashPassword } from "../../utils/helpers/PasswordManage";
 import { Message } from "../../utils/constants/messages";
 import { HttpErrors } from "../../utils/constants/http";
 import DatabaseClass from "../../utils/Database/Database";
-export const testSer = async () => {};
+import CacheClass from "../../redis/CacheClass";
+import { UserDocument } from "../../user/model/user.model";
+export const testSer = async () => {
+  const input = {
+    _id: "123456789123456789123456",
+    name: "123",
+    createdAt: "0",
+    verified: "true",
+  };
+  const a = await CacheClass.deserializeCache<UserDocument>(input);
+  console.log(input);
+  console.log(a);
+  console.log(typeof a._id);
+  console.log(typeof a.name);
+  console.log(typeof a.createdAt);
+  console.log(typeof a.verified);
+};
 
 export const createUserService = async (data: newUserType) => {
   const { name, password, email, surname, userAgent } = data as newUserType;
@@ -140,11 +156,13 @@ export type changePasswordType = {
 export const changePasswordService = async ({ verificationCode, password }: changePasswordType) => {
   // find verification code that has been sent via mail
   const validCode = await DatabaseClass.verificationCode.findOnePasswordResetById(verificationCode);
+  console.log(validCode);
   appAssert(validCode, HttpErrors.NOT_FOUND, Message.FAIL_VERIFICATION_CODE_INVALID);
 
   const newPassword = await hashPassword(password);
   //update password
   const updatedUser = await DatabaseClass.user.findByIdAndUpdate(validCode.userId, { password: newPassword });
+  console.log(updatedUser);
   appAssert(updatedUser, HttpErrors.INTERNAL_SERVER_ERROR, Message.FAIL_USER_PASSWORD_RESET);
 
   // delete verification code

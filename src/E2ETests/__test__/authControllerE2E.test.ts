@@ -6,6 +6,8 @@ import { HttpErrors } from "../../utils/constants/http";
 import VerificationCodeModel from "../../auth/model/verificationCode.model";
 import { VerificationCodeType } from "../../types/verificationCodeManage";
 import { oneYearFromNow, oneHourFromNow } from "../../utils/helpers/date";
+import { UserDocument } from "../../user/model/user.model";
+import mongoose from "mongoose";
 
 beforeAll(async () => {
   await connectDb();
@@ -20,7 +22,7 @@ const forgotPassPath = "/api/v1.1.1/auth/forgotPassword"; // :verificationCode
 const verifyPath = "/api/v1.1.1/auth/verify"; // :code
 const refreshPath = "/api/v1.1.1/auth/refresh";
 let mockUser: {
-  _id: string;
+  _id: mongoose.Types.ObjectId;
   email: string;
   name: string;
   verified: boolean;
@@ -48,7 +50,7 @@ describe("Auth controller E2E tests", () => {
         password: "e2etest1@#",
         confirmPassword: "e2etest1@#",
       });
-      mockUser = res.body.user;
+      mockUser = res.body.user as UserDocument;
       mockVerificateEmailCode = await VerificationCodeModel.create({
         userId: mockUser._id,
         type: VerificationCodeType.EmailVerification,

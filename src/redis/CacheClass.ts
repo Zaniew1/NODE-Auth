@@ -10,12 +10,12 @@ export interface CacheClassType {
   setHashCache<T extends object>(key: string, attributes: T): Promise<number | null>;
   getHashCache<T extends object>(key: string): Promise<T | null>;
   deleteHashCacheById(key: string): Promise<number | null>;
-  serializeCache<T extends object>(attributes: T): FlatObject;
-  deserializeCache<T extends object>(flatObject: FlatObject): T;
   setCacheList<T extends object>(key: string, listElement: T): Promise<number | null>;
   getCacheList(key: string): Promise<string[] | null>;
   setStringCache(key: string, value: string): Promise<string | null>;
   getStringCache(key: string): Promise<mongoose.Types.ObjectId | null>;
+  serializeCache<T extends object>(attributes: T): FlatObject;
+  deserializeCache<T extends object>(flatObject: FlatObject): T;
 }
 
 class Cache implements CacheClassType {
@@ -54,48 +54,6 @@ class Cache implements CacheClassType {
       return null;
     }
   };
-  public serializeCache = <T extends object>(attributes: T): FlatObject => {
-    const serializedObj: FlatObject = {};
-    Object.entries(attributes).forEach(([key, value]) => {
-      if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-        serializedObj[key] = String(value);
-      } else if (value instanceof Date) {
-        serializedObj[key] = String(value.getTime());
-      } else if ((typeof value === "object" || typeof value === "function") && value !== null) {
-        serializedObj[key] = JSON.stringify(value); // Serialize nested objects as JSON strings
-      }
-    });
-    return serializedObj;
-  };
-  public deserializeCache = <T extends object>(flatObject: FlatObject): T => {
-    const deserializedObj: Partial<T> = {};
-    Object.entries(flatObject).forEach(([key, value]) => {
-      try {
-        // objects, functions
-        const parsedValue = JSON.parse(value);
-        deserializedObj[key as keyof T] = parsedValue as T[keyof T];
-      } catch {
-        // Date
-        if (!isNaN(Date.parse(value))) {
-          deserializedObj[key as keyof T] = new Date(parseInt(value, 10)) as T[keyof T];
-        }
-        //number
-        else if (!isNaN(Number(value))) {
-          deserializedObj[key as keyof T] = Number(value) as T[keyof T];
-        }
-        //boolean
-        else if (value === "true" || value === "false") {
-          deserializedObj[key as keyof T] = (value === "true") as T[keyof T];
-        }
-        //string
-        else {
-          deserializedObj[key as keyof T] = value as T[keyof T];
-        }
-      }
-    });
-
-    return deserializedObj as T;
-  };
 
   public setCacheList = async <T>(key: string, listElement: T): Promise<number | null> => {
     try {
@@ -122,11 +80,47 @@ class Cache implements CacheClassType {
   public getStringCache = async (key: string): Promise<mongoose.Types.ObjectId | null> => {
     try {
       const string = await redisClient.GET(key);
-      return new mongoose.Types.ObjectId(string as string);
+      if (string != null) {
+        return new mongoose.Types.ObjectId(string as string);
+      }
+      return string;
     } catch (e) {
       console.log(e);
       return null;
     }
+  };
+  public serializeCache = <T extends object>(attributes: T): FlatObject => {
+    const serializedObj: FlatObject = {};
+    Object.entries(attributes).forEach(([key, value]) => {
+      if (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || mongoose.isValidObjectId(value)) {
+        serializedObj[key] = String(value);
+      } else if (value instanceof Date) {
+        serializedObj[key] = String(value.getTime());
+      } else if ((typeof value === "object" || typeof value === "function") && value !== null) {
+        serializedObj[key] = JSON.stringify(value); // Serialize nested objects as JSON strings
+      }
+    });
+    return serializedObj;
+  };
+  public deserializeCache = <T extends object>(flatObject: FlatObject): T => {
+    const deserializedObj: Partial<T> = {};
+
+    Object.entries(flatObject).forEach(([key, value]) => {
+      // console.log(key);
+      console.log();
+      if (key === "_id" && mongoose.isValidObjectId(value)) {
+        deserializedObj[key as keyof T] = new mongoose.Types.ObjectId(value) as T[keyof T];
+      } else if (key === "expiresAt" || key === "createdAt" || key === "updatedAt") {
+        deserializedObj[key as keyof T] = new Date(Number(value)) as T[keyof T];
+      } else if (value === "true" || value === "false") {
+        deserializedObj[key as keyof T] = (value === "true") as T[keyof T];
+      } else if (!isNaN(Number(value))) {
+        deserializedObj[key as keyof T] = Number(value) as T[keyof T];
+      } else {
+        deserializedObj[key as keyof T] = value as T[keyof T];
+      }
+    });
+    return deserializedObj as T;
   };
 }
 export default new Cache();

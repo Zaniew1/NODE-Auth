@@ -30,8 +30,10 @@ export default class UserClass implements UserClassType {
   }
   async findOneByMail(email: string): Promise<UserDocument | null> {
     const userId = await CacheClass.getStringCache(setUniqueEmailStringKey(email));
+    console.log(userId);
     if (userId) {
       const userCache = await CacheClass.getHashCache<UserDocument>(setUserHashKey(userId));
+      console.log(userCache);
       if (!userCache) {
         const user = await UserModel.findOne({ email });
         if (user) await CacheClass.setHashCache<UserDocument>(setUserHashKey(userId), user.toObject());

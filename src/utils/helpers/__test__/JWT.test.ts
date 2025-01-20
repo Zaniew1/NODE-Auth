@@ -4,7 +4,9 @@ import { AssertionError } from "node:assert";
 import { Message } from "../../constants/messages";
 import AppError, { AppErrorCode } from "../appError";
 import { HttpErrors } from "../../constants/http";
+import mongoose from "mongoose";
 jest.mock("jsonwebtoken");
+const mockObjectId = new mongoose.Types.ObjectId("123456789123456789123456");
 
 describe("JWT class test suite", () => {
   afterEach(() => {
@@ -16,7 +18,7 @@ describe("JWT class test suite", () => {
   describe("signAccessToken method test suite", () => {
     it("Should return proper aceess token", async () => {
       const payloadMock: AccessTokenPayload = {
-        userId: "672b50c01df576319309286e",
+        userId: mockObjectId,
         sessionId: "67290b913991ecf85c227fb9",
       };
       (sign as jest.Mock).mockReturnValueOnce("token");
@@ -38,7 +40,7 @@ describe("JWT class test suite", () => {
   describe("validateAccessToken method test suite", () => {
     it("Should return payload if successful", async () => {
       const payloadMock: AccessTokenPayload = {
-        userId: "123",
+        userId: mockObjectId,
         sessionId: "123",
       };
       const token =

@@ -16,6 +16,10 @@ import z, { ZodError } from "zod";
 import { AssertionError } from "node:assert";
 import { JWT } from "../../utils/helpers/Jwt";
 import SessionModel from "../../session/model/session.model";
+import mongoose from "mongoose";
+
+const mockObjectId = new mongoose.Types.ObjectId("123456789123456789123456");
+
 const mockRequest = (): Partial<Request> => {
   return {
     headers: {
@@ -147,7 +151,7 @@ describe("authController test suite", () => {
       reqMock.cookies.accessToken = accessTokenMock;
       const resMock = mockResponse() as Response;
       let jwtSpy: jest.SpyInstance = jest.spyOn(JWT, "validateAccessToken");
-      jwtSpy.mockReturnValueOnce({ userId: "123", sessionId: sessionIdMock });
+      jwtSpy.mockReturnValueOnce({ userId: mockObjectId, sessionId: sessionIdMock });
       const sessionSpy = jest.spyOn(SessionModel, "findByIdAndDelete").mockResolvedValueOnce({});
       const clearCookiesSpy = jest.spyOn(CookiesClass, "clearAuthCookies").mockReturnValueOnce(resMock);
       await logoutHandler(reqMock, resMock, mockNext);
@@ -206,7 +210,7 @@ describe("authController test suite", () => {
       const verifyCode = "123123123123";
       reqMock.params.code = verifyCode;
       const mockUser = {
-        _id: "672b50c01df576319309286e",
+        _id: mockObjectId,
         email: "m.zaniewski19915@gmail.com",
         verified: true,
         createdAt: new Date("2024-11-06T11:19:28.526+00:00"),
@@ -241,7 +245,7 @@ describe("authController test suite", () => {
       reqMock.body.password = passMock;
       reqMock.body.verificationCode = verCodeMock;
       const mockUser = {
-        _id: "672b50c01df576319309286e",
+        _id: mockObjectId,
         email: "m.zaniewski19915@gmail.com",
         verified: true,
         createdAt: new Date("2024-11-06T11:19:28.526+00:00"),

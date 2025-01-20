@@ -19,7 +19,6 @@ export interface VerificationCodeClassType {
 export default class VerificationCodeClass implements VerificationCodeClassType {
   async create(properties: Partial<VerificationCodeDocument>): Promise<VerificationCodeDocument> {
     const verificationCode = (await VerificationModel.create(properties)) as VerificationCodeDocument;
-    await CacheClass.setCacheList(setVerificationCodeListKey(verificationCode.userId), String(verificationCode._id));
     await CacheClass.setHashCache<VerificationCodeDocument>(setVerificationCodeHashKey(verificationCode._id), verificationCode.toObject());
     await CacheClass.setCacheList<VerificationCodeDocument["_id"]>(setVerificationCodeListKey(verificationCode.userId), verificationCode._id);
     return verificationCode;
