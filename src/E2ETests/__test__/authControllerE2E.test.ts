@@ -47,6 +47,7 @@ describe("Auth controller E2E tests", () => {
       const res = await agent(app).post(registerPath).send({
         name: "test",
         email: "tes1t1213@gmail.com",
+        surname: "Mateusz",
         password: "e2etest1@#",
         confirmPassword: "e2etest1@#",
       });

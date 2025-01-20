@@ -19,6 +19,7 @@ import SessionModel from "../../session/model/session.model";
 import mongoose from "mongoose";
 
 const mockObjectId = new mongoose.Types.ObjectId("123456789123456789123456");
+const mocksessionId = new mongoose.Types.ObjectId("123456789123456789123456");
 
 const mockRequest = (): Partial<Request> => {
   return {
@@ -147,16 +148,15 @@ describe("authController test suite", () => {
       const reqMock = mockRequest() as Request;
       const accessTokenMock =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2NzQ0YTE4OGY0NmMzNTM2YTQ3YTgwYTYiLCJ1c2VySWQiOiI2NzQ0YTE4OGY0NmMzNTM2YTQ3YTgwYTIiLCJpYXQiOjE3MzI1NTEwNDgsImV4cCI6MTczMjU1MTk0OCwiYXVkIjpbIlVzZXIiXX0.OGgHwwYygLVPGUZ3Dh2VxY9I1dXBWE6TKs_e-yk-PRo";
-      const sessionIdMock = "67290b913991ecf85c227fb9";
       reqMock.cookies.accessToken = accessTokenMock;
       const resMock = mockResponse() as Response;
       let jwtSpy: jest.SpyInstance = jest.spyOn(JWT, "validateAccessToken");
-      jwtSpy.mockReturnValueOnce({ userId: mockObjectId, sessionId: sessionIdMock });
+      jwtSpy.mockReturnValueOnce({ userId: mockObjectId, sessionId: mocksessionId });
       const sessionSpy = jest.spyOn(SessionModel, "findByIdAndDelete").mockResolvedValueOnce({});
       const clearCookiesSpy = jest.spyOn(CookiesClass, "clearAuthCookies").mockReturnValueOnce(resMock);
       await logoutHandler(reqMock, resMock, mockNext);
       expect(jwtSpy).toHaveBeenCalledWith(accessTokenMock);
-      expect(sessionSpy).toHaveBeenCalledWith(sessionIdMock);
+      expect(sessionSpy).toHaveBeenCalledWith(mocksessionId);
       expect(clearCookiesSpy).toHaveBeenCalledWith(resMock);
       expect(resMock.status).toHaveBeenCalledWith(HttpErrors.OK);
       expect(resMock.json).toHaveBeenCalledWith({ message: Message.SUCCESS_USER_LOGOUT });

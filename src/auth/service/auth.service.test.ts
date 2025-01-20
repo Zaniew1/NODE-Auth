@@ -2,6 +2,10 @@ import { JWT } from "../../utils/helpers/Jwt";
 import SessionModel from "../../session/model/session.model";
 import * as allDates from "../../utils/helpers/date";
 import { refreshAccessTokenUserService } from "./auth.service";
+import mongoose from "mongoose";
+
+const mocksessionId = new mongoose.Types.ObjectId("123456789123456789123456");
+
 describe("authService test suite", () => {
   describe("refreshAccessTokenUserService function test suite", () => {
     it("Should refresh user's refresh token if expire date is shorter than 1 day", async () => {
@@ -13,7 +17,7 @@ describe("authService test suite", () => {
       };
       jest.spyOn(SessionModel, "findById").mockResolvedValueOnce(mockSession);
       jest.spyOn(JWT, "validateRefreshToken").mockReturnValueOnce({
-        sessionId: "123123",
+        sessionId: mocksessionId,
       });
       const refreshToken = "123123123123";
       const thirtyDays = jest.spyOn(allDates, "thirtyDaysFromNow").mockReturnValue(new Date(Date.now() + 0.8 * (24 * 60 * 60 * 1000)));
@@ -32,7 +36,7 @@ describe("authService test suite", () => {
       };
       jest.spyOn(SessionModel, "findById").mockResolvedValueOnce(mockSession);
       jest.spyOn(JWT, "validateRefreshToken").mockReturnValueOnce({
-        sessionId: "123123",
+        sessionId: mocksessionId,
       });
       const refreshToken = "123123123123";
       const thirtyDays = jest.spyOn(allDates, "thirtyDaysFromNow").mockReturnValue(new Date(Date.now() + 0.8 * (24 * 60 * 60 * 1000)));

@@ -105,21 +105,20 @@ class Cache implements CacheClassType {
   public deserializeCache = <T extends object>(flatObject: FlatObject): T => {
     const deserializedObj: Partial<T> = {};
 
-    Object.entries(flatObject).forEach(([key, value]) => {
-      // console.log(key);
-      console.log();
-      if (key === "_id" && mongoose.isValidObjectId(value)) {
-        deserializedObj[key as keyof T] = new mongoose.Types.ObjectId(value) as T[keyof T];
-      } else if (key === "expiresAt" || key === "createdAt" || key === "updatedAt") {
-        deserializedObj[key as keyof T] = new Date(Number(value)) as T[keyof T];
-      } else if (value === "true" || value === "false") {
-        deserializedObj[key as keyof T] = (value === "true") as T[keyof T];
-      } else if (!isNaN(Number(value))) {
-        deserializedObj[key as keyof T] = Number(value) as T[keyof T];
-      } else {
-        deserializedObj[key as keyof T] = value as T[keyof T];
-      }
-    });
+    // Object.entries(flatObject).forEach(([key, value]) => {
+    //   // console.log(key);
+    //   if (key === "_id" && mongoose.isValidObjectId(value)) {
+    //     deserializedObj[key as keyof T] = new mongoose.Types.ObjectId(value) as T[keyof T];
+    //   } else if (key === "expiresAt" || key === "createdAt" || key === "updatedAt") {
+    //     deserializedObj[key as keyof T] = new Date(Number(value)) as T[keyof T];
+    //   } else if (value === "true" || value === "false") {
+    //     deserializedObj[key as keyof T] = (value === "true") as T[keyof T];
+    //   } else if (!isNaN(Number(value))) {
+    //     deserializedObj[key as keyof T] = Number(value) as T[keyof T];
+    //   } else {
+    //     deserializedObj[key as keyof T] = value as T[keyof T];
+    //   }
+    // });
     return deserializedObj as T;
   };
 }

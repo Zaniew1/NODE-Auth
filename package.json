@@ -7,7 +7,7 @@
     "dev": "ts-node-dev --files src/index.ts",
     "build": "tsc && cp ./package.json ./dist",
     "start": "node indes.js",
-    "test": "jest SessionDatabase.test.ts --watch",
+    "test": "jest  --watch",
     "coverage": "jest --coverage"
   },
   "repository": {

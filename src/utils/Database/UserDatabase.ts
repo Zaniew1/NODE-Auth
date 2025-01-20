@@ -2,7 +2,7 @@ import { UserDocument } from "../../user/model/user.model";
 import UserModel from "../../user/model/user.model";
 import CacheClass from "../../redis/CacheClass";
 import { setUniqueEmailStringKey, setUserHashKey } from "../../redis/user";
-import mongoose, { ObjectId } from "mongoose";
+// import mongoose, { ObjectId } from "mongoose";
 export interface UserClassType {
   existsByEmail(email: string): Promise<UserDocument["_id"] | null>;
   create(properties: Partial<UserDocument>): Promise<UserDocument>;
@@ -30,7 +30,6 @@ export default class UserClass implements UserClassType {
   }
   async findOneByMail(email: string): Promise<UserDocument | null> {
     const userId = await CacheClass.getStringCache(setUniqueEmailStringKey(email));
-    console.log(userId);
     if (userId) {
       const userCache = await CacheClass.getHashCache<UserDocument>(setUserHashKey(userId));
       console.log(userCache);
