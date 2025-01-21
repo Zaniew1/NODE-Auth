@@ -1,10 +1,7 @@
-import mongoose, { ObjectId } from "mongoose";
-import { VerificationCodeDocument } from "../auth/model/verificationCode.model";
-import { SessionDocument } from "../session/model/session.model";
-import { UserDocument } from "../user/model/user.model";
+import mongoose from "mongoose";
 import redisClient from "./redisClient";
+import { REDIS_ON } from "../utils/constants/env";
 export type FlatObject = Record<string, string>;
-export type CacheListType = string | boolean | number | SessionDocument["_id"] | UserDocument["_id"] | VerificationCodeDocument["_id"];
 export interface CacheClassType {
   replaceCacheData<T extends object>(key: string, field: keyof T, value: string): Promise<number | null>;
   setHashCache<T extends object>(key: string, attributes: T): Promise<number | null>;
@@ -104,22 +101,57 @@ class Cache implements CacheClassType {
   };
   public deserializeCache = <T extends object>(flatObject: FlatObject): T => {
     const deserializedObj: Partial<T> = {};
-
-    // Object.entries(flatObject).forEach(([key, value]) => {
-    //   // console.log(key);
-    //   if (key === "_id" && mongoose.isValidObjectId(value)) {
-    //     deserializedObj[key as keyof T] = new mongoose.Types.ObjectId(value) as T[keyof T];
-    //   } else if (key === "expiresAt" || key === "createdAt" || key === "updatedAt") {
-    //     deserializedObj[key as keyof T] = new Date(Number(value)) as T[keyof T];
-    //   } else if (value === "true" || value === "false") {
-    //     deserializedObj[key as keyof T] = (value === "true") as T[keyof T];
-    //   } else if (!isNaN(Number(value))) {
-    //     deserializedObj[key as keyof T] = Number(value) as T[keyof T];
-    //   } else {
-    //     deserializedObj[key as keyof T] = value as T[keyof T];
-    //   }
-    // });
+    Object.entries(flatObject).forEach(([key, value]) => {
+      // console.log(key);
+      if ((key === "_id" || key === "userId") && mongoose.isValidObjectId(value)) {
+        deserializedObj[key as keyof T] = new mongoose.Types.ObjectId(value) as T[keyof T];
+      } else if (key === "expiresAt" || key === "createdAt" || key === "updatedAt") {
+        deserializedObj[key as keyof T] = new Date(Number(value)) as T[keyof T];
+      } else if (key === "name" || key === "surname" || key === "type" || key === "email" || key === "userAgent") {
+        deserializedObj[key as keyof T] = String(value) as T[keyof T];
+      } else if (value === "true" || value === "false") {
+        deserializedObj[key as keyof T] = (value === "true") as T[keyof T];
+      } else if (!isNaN(Number(value))) {
+        deserializedObj[key as keyof T] = Number(value) as T[keyof T];
+      } else {
+        deserializedObj[key as keyof T] = value as T[keyof T];
+      }
+    });
     return deserializedObj as T;
   };
 }
-export default new Cache();
+class CacheProxyClass implements CacheClassType {
+  public replaceCacheData = async <T extends object>(key: string, field: keyof T, value: string): Promise<number | null> => {
+    return null;
+  };
+  public setHashCache = async <T extends object>(key: string, attributes: T): Promise<number | null> => {
+    return null;
+  };
+  public getHashCache = async <T extends object>(key: string): Promise<T | null> => {
+    return null;
+  };
+  public deleteHashCacheById = async (key: string): Promise<number | null> => {
+    return null;
+  };
+  public setCacheList = async <T>(key: string, listElement: T): Promise<number | null> => {
+    return null;
+  };
+  public getCacheList = async (key: string): Promise<string[] | null> => {
+    return null;
+  };
+  public setStringCache = async (key: string, value: string): Promise<string | null> => {
+    return null;
+  };
+  public getStringCache = async (key: string): Promise<mongoose.Types.ObjectId | null> => {
+    return null;
+  };
+  public serializeCache = <T extends object>(attributes: T): FlatObject => {
+    return {};
+  };
+  public deserializeCache = <T extends object>(flatObject: FlatObject): T => {
+    const deserializedObj: Partial<T> = {};
+    return deserializedObj as T;
+  };
+}
+const cache = REDIS_ON == "true" ? new Cache() : new CacheProxyClass();
+export default cache;

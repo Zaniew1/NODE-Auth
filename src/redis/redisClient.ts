@@ -1,5 +1,5 @@
 import { createClient } from "redis";
-import { REDIS_HOST, REDIS_PORT, REDIS_PASS } from "../utils/constants/env";
+import { REDIS_HOST, REDIS_PORT, REDIS_PASS, REDIS_ON } from "../utils/constants/env";
 const redisClient = createClient({
   socket: {
     host: REDIS_HOST,
@@ -7,7 +7,9 @@ const redisClient = createClient({
   },
   password: REDIS_PASS,
 });
-redisClient.on("error", (err: Error) => console.error(err));
-redisClient.connect();
+if (REDIS_ON == "true") {
+  redisClient.on("error", (err: Error) => console.error(err));
+  redisClient.connect();
+}
 
 export default redisClient;

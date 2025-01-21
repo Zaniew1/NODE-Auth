@@ -2,7 +2,7 @@ import CacheClass from "../../redis/CacheClass";
 import { setSessionHashKey, setSessionListKey } from "../../redis/session";
 import { SessionDocument } from "../../session/model/session.model";
 import SessionModel from "../../session/model/session.model";
-import mongoose, { DeleteResult } from "mongoose";
+import mongoose from "mongoose";
 import { UserDocument } from "../../user/model/user.model";
 export interface SessionClassType {
   create(properties: Partial<SessionDocument>): Promise<SessionDocument>;

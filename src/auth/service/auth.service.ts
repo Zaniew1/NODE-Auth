@@ -13,21 +13,7 @@ import { HttpErrors } from "../../utils/constants/http";
 import DatabaseClass from "../../utils/Database/Database";
 import CacheClass from "../../redis/CacheClass";
 import { UserDocument } from "../../user/model/user.model";
-export const testSer = async () => {
-  const input = {
-    _id: "123456789123456789123456",
-    name: "123",
-    createdAt: "0",
-    verified: "true",
-  };
-  // const a = await CacheClass.deserializeCache<UserDocument>(input);
-  // console.log(input);
-  // console.log(a);
-  // console.log(typeof a._id);
-  // console.log(typeof a.name);
-  // console.log(typeof a.createdAt);
-  // console.log(typeof a.verified);
-};
+export const testSer = async () => {};
 
 export const createUserService = async (data: newUserType) => {
   const { name, password, email, surname, userAgent } = data as newUserType;
