@@ -45,7 +45,8 @@ export default class SessionClass implements SessionClassType {
     sessionsIdByUserId?.forEach(async (sessionId) => {
       const sessionObjectId = new mongoose.Types.ObjectId(sessionId);
       const session = await CacheClass.getHashCache<SessionDocument>(setSessionHashKey(sessionObjectId));
-      if (session?.createdAt && session?.createdAt > new Date()) {
+
+      if (session?.createdAt && session.createdAt instanceof Date && session.createdAt > new Date()) {
         sessions.push(session as SessionDocument);
       }
     });
@@ -55,7 +56,11 @@ export default class SessionClass implements SessionClassType {
         expiresAt: { $gt: new Date() },
       });
     }
-    return sessions.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    return sessions.sort((a, b) => {
+      const dateA = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
+      const dateB = b.createdAt instanceof Date ? b.createdAt.getTime() : 0;
+      return dateA - dateB;
+    });
   }
   async findByIdAndDelete(id: SessionDocument["_id"]): Promise<SessionDocument | null> {
     await CacheClass.deleteHashCacheById(setSessionHashKey(id));

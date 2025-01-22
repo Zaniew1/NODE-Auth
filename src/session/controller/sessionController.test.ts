@@ -1,11 +1,15 @@
 import { getSessionHandler, deleteSessionHandler } from "./sessionController";
-import SessionModel from "../model/session.model";
+import SessionModel, { SessionDocument } from "../model/session.model";
 import { NextFunction, Response, Request } from "express";
 import { HttpErrors } from "../../utils/constants/http";
 import { Message } from "../../utils/constants/messages";
 import z from "zod";
 import { AssertionError } from "node:assert";
-
+import mongoose from "mongoose";
+import DatabaseClass from "../../utils/Database/Database";
+import { UserDocument } from "../../user/model/user.model";
+const mockUserId = new mongoose.Types.ObjectId("123456789123456789123456");
+const mockSessionId = new mongoose.Types.ObjectId("123456789123456789123455");
 const mockRequest = (): Partial<Request> => {
   return {
     body: null,
@@ -21,8 +25,8 @@ const mockResponse = (): Partial<Response> => {
 };
 const mockNext: NextFunction = jest.fn();
 const sessionMock = {
-  _id: "67290b913991ecf85c227fb9",
-  userId: "67290b913991ecf85c227fb9",
+  _id: mockSessionId,
+  userId: mockUserId,
   userAgent: "MockAgent",
   createdAt: "2024-11-04T17:59:45.493+00:00",
   expiresAt: "2024-12-04T17:59:45.493+00:00",
@@ -61,30 +65,27 @@ describe("sessionController test suite", () => {
       resMock.locals.userId = "67290b913991ecf85c227fb9";
       resMock.locals.sessionId = "67290b913991ecf85c227fb9";
       const sessionMock = {
-        _id: "67290b913991ecf85c227fb9",
-        userId: "67290b913991ecf85c227fb9",
+        _id: new mongoose.Types.ObjectId(resMock.locals.sessionId),
+        userId: new mongoose.Types.ObjectId(resMock.locals.userId),
         userAgent: "MockAgent",
-        createdAt: "2024-11-04T17:59:45.493+00:00",
-        expiresAt: "2024-12-04T17:59:45.493+00:00",
-      };
+        createdAt: new Date(0),
+        expiresAt: new Date(0),
+        isCurrent: true,
+      } as Partial<SessionDocument> as SessionDocument;
       const sessionMock2 = {
-        _id: "67290b913991ecf8512312312",
-        userId: "67290b913991ecf812312312",
+        _id: new mongoose.Types.ObjectId(resMock.locals.sessionId),
+        userId: new mongoose.Types.ObjectId(resMock.locals.userId),
         userAgent: "MockAgent",
-        createdAt: "2024-11-04T17:59:45.493+00:00",
-        expiresAt: "2024-12-04T17:59:45.493+00:00",
-      };
+        createdAt: new Date(1),
+        expiresAt: new Date(1),
+      } as Partial<SessionDocument> as SessionDocument;
       const current = { isCurrent: true };
-      let findSpy: jest.SpyInstance = jest.spyOn(SessionModel, "find").mockResolvedValueOnce([sessionMock, sessionMock2]);
+      let findSpy: jest.SpyInstance = jest.spyOn(DatabaseClass.session, "findSessionsByUserId").mockResolvedValueOnce([sessionMock, sessionMock2]);
 
       await getSessionHandler(reqMock, resMock, mockNext);
 
       expect(mockNext).not.toHaveBeenCalled();
-      expect(findSpy).toHaveBeenCalledWith(
-        { userId: sessionMock.userId, expiresAt: { $gt: expect.any(Date) } },
-        { _id: 1, userAgent: 1, createdAt: 1 },
-        { sort: { createdAt: -1 } }
-      );
+      expect(findSpy).toHaveBeenCalledWith(sessionMock.userId);
       expect(resMock.locals.userId).toBeDefined();
       expect(resMock.locals.userId).toBe("67290b913991ecf85c227fb9");
       expect(resMock.locals.sessionId).toBeDefined();
