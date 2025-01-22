@@ -78,6 +78,7 @@ export const refreshAccessTokenUserService = async (refreshToken: string) => {
   const session = await DatabaseClass.session.findById(payload.sessionId);
   const now = Date.now();
   appAssert(session, HttpErrors.UNAUTHORIZED, Message.FAIL_SESSION_EXPIRED);
+  session.expiresAt = new Date(session.expiresAt);
   appAssert(session.expiresAt.getTime() > now, HttpErrors.UNAUTHORIZED, Message.FAIL_SESSION_EXPIRED);
 
   // refresh session if it's coming to the end (1day)
