@@ -7,7 +7,7 @@
     "dev": "ts-node-dev --files src/index.ts",
     "build": "tsc && cp ./package.json ./dist",
     "start": "node indes.js",
-    "test": "jest  --watch",
+    "test": "jest  CacheClass.test.ts --watch",
     "coverage": "jest --coverage"
   },
   "repository": {

@@ -3,12 +3,15 @@ import { connectDb, closeDb } from "./db-handler";
 import app from "../../index";
 import { Message } from "../../utils/constants/messages";
 import { HttpErrors } from "../../utils/constants/http";
-import VerificationCodeModel from "../../auth/model/verificationCode.model";
+import VerificationCodeModel, { VerificationCodeDocument } from "../../auth/model/verificationCode.model";
 import { VerificationCodeType } from "../../types/verificationCodeManage";
 import { oneYearFromNow, oneHourFromNow } from "../../utils/helpers/date";
 import { UserDocument } from "../../user/model/user.model";
+import DatabaseClass from "../../utils/Database/Database";
 import mongoose from "mongoose";
+import { APP_VERSION } from "../../utils/constants/env";
 
+const randomUid = Math.floor(Math.random() * 10000000);
 beforeAll(async () => {
   await connectDb();
 });
@@ -21,22 +24,17 @@ const changePassPath = "/api/v1.1.1/auth/changePassword";
 const forgotPassPath = "/api/v1.1.1/auth/forgotPassword"; // :verificationCode
 const verifyPath = "/api/v1.1.1/auth/verify"; // :code
 const refreshPath = "/api/v1.1.1/auth/refresh";
-let mockUser: {
-  _id: mongoose.Types.ObjectId;
-  email: string;
-  name: string;
-  verified: boolean;
-};
+let mockUser: UserDocument;
 let mockAccessToken: string;
 let mockRefreshToken: string;
-let mockVerificationCode: any;
-let mockVerificateEmailCode: any;
+let mockVerificationCode: VerificationCodeDocument;
+let mockVerificateEmailCode: VerificationCodeDocument;
 describe("Auth controller E2E tests", () => {
   describe("[POST] - REGISTER USER ", () => {
     it("Should throw validation user", async () => {
       const res = await agent(app).post(registerPath).send({
         name: "test",
-        email: "test123@gmail.com",
+        email: `test1@gmail.com`,
         password: "e2etest1@#",
       });
       expect(res.statusCode).toBe(400);
@@ -44,20 +42,21 @@ describe("Auth controller E2E tests", () => {
       expect(JSON.parse(res.text).errors[0].message).toBe("Confirm password is required");
     });
     it("Should add user", async () => {
-      const res = await agent(app).post(registerPath).send({
-        name: "test",
-        email: "tes1t1213@gmail.com",
-        surname: "Mateusz",
-        password: "e2etest1@#",
-        confirmPassword: "e2etest1@#",
-      });
+      const res = await agent(app)
+        .post(registerPath)
+        .send({
+          name: "test",
+          email: `test${randomUid}12@gmail.com`,
+          surname: "Mateusz",
+          password: "e2etest1@#1",
+          confirmPassword: "e2etest1@#1",
+        });
       mockUser = res.body.user as UserDocument;
-      mockVerificateEmailCode = await VerificationCodeModel.create({
+      mockVerificateEmailCode = await DatabaseClass.verificationCode.create({
         userId: mockUser._id,
         type: VerificationCodeType.EmailVerification,
         expiresAt: oneYearFromNow(),
       });
-      // mockRefreshToken = res.header;
       if (Array.isArray(res.header["set-cookie"])) {
         mockAccessToken = res.header["set-cookie"]
           .find((cookie: string) => cookie.startsWith("accessToken="))
@@ -130,11 +129,10 @@ describe("Auth controller E2E tests", () => {
       const res = await agent(app).patch(forgotPassPath).send({
         email: mockUser.email,
       });
-      const expiresAt = oneHourFromNow();
-      mockVerificationCode = await VerificationCodeModel.create({
+      mockVerificationCode = await DatabaseClass.verificationCode.create({
         userId: mockUser._id,
         type: VerificationCodeType.PasswordReset,
-        expiresAt,
+        expiresAt: oneHourFromNow(),
       });
       // expect(res.statusCode).toBe(HttpErrors.OK);
       expect(res.body.message).toBe(Message.SUCCESS_USER_FORGET_PASSWORD);
@@ -173,7 +171,7 @@ describe("Auth controller E2E tests", () => {
     });
     it("Should verify user's email", async () => {
       const res = await agent(app)
-        .get(verifyPath + "/" + mockVerificateEmailCode._id)
+        .get(verifyPath + "/" + String(mockVerificateEmailCode._id))
         .send({});
       expect(res.statusCode).toBe(HttpErrors.OK);
       expect(res.body.message).toBe(Message.SUCCESS_USER_VERIFIED_MAIL);

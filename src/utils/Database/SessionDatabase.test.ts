@@ -1,20 +1,19 @@
 import mongoose from "mongoose";
 import CacheClass from "../../redis/CacheClass";
 import { setSessionHashKey, setSessionListKey } from "../../redis/session";
-import SessionModel from "../../session/model/session.model";
-import { SessionDocument } from "../../session/model/session.model";
+import SessionModel, { SessionDocument } from "../../session/model/session.model";
+import * as SessionFunc from "../../redis/session";
 import { UserDocument } from "../../user/model/user.model";
-import SessionDb from "./SessionDatabase";
-jest.mock("./SessionDatabase", () => ({
-  HSET: jest.fn(),
-  HGETALL: jest.fn(),
-  DEL: jest.fn(),
-  LPUSH: jest.fn(),
-  LRANGE: jest.fn(),
-  SET: jest.fn(),
-  GET: jest.fn(),
+jest.mock("../../session/model/session.model", () => ({
+  create: jest.fn(),
 }));
-jest.mock("../../redis/CacheClass.ts", () => {
+
+jest.mock("../../redis/session", () => ({
+  setSessionHashKey: jest.fn(),
+  setSessionListKey: jest.fn(),
+}));
+
+jest.mock("../../redis/CacheClass", () => {
   return {
     getHashCache: jest.fn(),
     setHashCache: jest.fn(),
@@ -26,142 +25,58 @@ jest.mock("../../redis/CacheClass.ts", () => {
 });
 
 jest.mock("../../session/model/session.model");
-const mockObjectId = new mongoose.Types.ObjectId("123456789123456789123456");
-const mockObjectId2 = new mongoose.Types.ObjectId("123456789123456789123456");
-const mockSession: Partial<SessionDocument> = {
-  _id: mockObjectId,
-  userId: mockObjectId2,
-  userAgent: "Mozilla/5.0",
-  createdAt: new Date(),
-  expiresAt: new Date(),
-  save: jest.fn(),
-  toObject: jest.fn().mockReturnValue({
-    _id: mockObjectId,
-    userId: "user1",
-    userAgent: "Mozilla/5.0",
-    createdAt: new Date(),
-    expiresAt: new Date(),
-  }),
-};
-describe.skip("SessionDatabase class test suite", () => {
+const mockId = new mongoose.Types.ObjectId("123456789123456789123456");
+const mockUserId = new mongoose.Types.ObjectId("123456789123456789123455");
+
+describe("SessionDatabase class test suite", () => {
   afterAll(() => {
     jest.resetAllMocks();
   });
 
   describe.skip("findById method test suite", () => {
-    it("Should return data of type SessionDocument from cache", async () => {});
+    it("Should return data of type SessionDocument from cache if REDIS_ON == true", async () => {});
 
     it("Should return data of type SessionDocument from database if not in cache", async () => {});
   });
+  describe.skip("create method test suite", () => {
+    it("Should create session", async () => {
+      const properties = { userId: "123", data: "test data" };
+      const mockSession: SessionDocument = {
+        _id: mockId.toHexString(),
+        userId: mockUserId.toHexString(),
+        createdAt: new Date(0),
+        expiresAt: new Date(0),
+        toObject: jest.fn().mockReturnValue({
+          _id: mockId,
+          userId: mockUserId,
+          createdAt: new Date(0),
+          expiresAt: new Date(0),
+        }),
+      } as unknown as SessionDocument;
+      // Mock SessionModel.create
+      (SessionModel.create as jest.Mock).mockResolvedValueOnce(mockSession);
 
-  describe("deleteManyByUserId method test suite", () => {
+      // Mock cache key helper functions
+      jest.spyOn(SessionFunc, "setSessionHashKey").mockReturnValue("session#123");
+      jest.spyOn(SessionFunc, "setSessionListKey").mockReturnValue("user:sessions:123");
+
+      // Call the function
+      const result = await SessionModel.create(properties);
+
+      // Assertions
+      expect(SessionModel.create).toHaveBeenCalledWith(properties);
+      // expect(setSessionHashKey).toHaveBeenCalledWith(mockId);
+      // expect(setSessionListKey).toHaveBeenCalledWith(mockUserId);
+      expect(CacheClass.setHashCache).toHaveBeenCalledWith("session#123", mockSession.toObject());
+      expect(CacheClass.setCacheList).toHaveBeenCalledWith("user:sessions:123", mockSession._id);
+      expect(result).toBe(mockSession);
+    });
+
+    it.skip("Should return data of type SessionDocument from database if not in cache", async () => {});
+  });
+  describe.skip("deleteManyByUserId method test suite", () => {
     it("Should return 0 if there was no data", async () => {});
 
     it("Should return number of deleted documents if there was some data", async () => {});
   });
-
-  // describe.skip("findSessionsByUserId method test suite", () => {
-  //   it("Should return empty array if there was no data", async () => {
-  //     CacheClass.getCacheList.mockResolvedValue([]);
-  //     const sessionClass = new SessionDb();
-  //     const result = await sessionClass.findSessionsByUserId("user1");
-  //     expect(result).toEqual([]);
-  //   });
-
-  //   it("Should return data of type SessionDocument", async () => {
-  //     const mockSession: SessionDocument = {
-  //       _id: "session1",
-  //       userId: "user1",
-  //       userAgent: "Mozilla/5.0",
-  //       createdAt: new Date(),
-  //       expiresAt: new Date(),
-  //       save: jest.fn(),
-  //       toObject: jest.fn().mockReturnValue({
-  //         _id: "session1",
-  //         userId: "user1",
-  //         userAgent: "Mozilla/5.0",
-  //         createdAt: new Date(),
-  //         expiresAt: new Date(),
-  //       }),
-  //     };
-
-  //     CacheClass.getCacheList.mockResolvedValue(["session1"]);
-  //     CacheClass.getHashCache.mockResolvedValue(mockSession);
-
-  //     const sessionClass = new SessionDb();
-  //     const result = await sessionClass.findSessionsByUserId("user1");
-  //     expect(result).toEqual([mockSession]);
-  //   });
-  // });
-
-  // describe.skip("findByIdAndDelete method test suite", () => {
-  //   it("Should return null if there was no data", async () => {
-  //     SessionModel.findByIdAndDelete.mockResolvedValue(null);
-  //     const sessionClass = new SessionDb();
-  //     const result = await sessionClass.findByIdAndDelete("123");
-  //     expect(result).toBeNull();
-  //     expect(CacheClass.deleteHashCacheById).toHaveBeenCalledWith(setSessionHashKey("123"));
-  //   });
-
-  //   it("Should return data of type SessionDocument when deleted", async () => {
-  //     const mockSession: SessionDocument = {
-  //       _id: "123",
-  //       userId: "user1",
-  //       userAgent: "Mozilla/5.0",
-  //       createdAt: new Date(),
-  //       expiresAt: new Date(),
-  //       save: jest.fn(),
-  //       toObject: jest.fn().mockReturnValue({
-  //         _id: "123",
-  //         userId: "user1",
-  //         userAgent: "Mozilla/5.0",
-  //         createdAt: new Date(),
-  //         expiresAt: new Date(),
-  //       }),
-  //     };
-
-  //     SessionModel.findByIdAndDelete.mockResolvedValue(mockSession);
-  //     const sessionClass = new SessionDb();
-  //     const result = await sessionClass.findByIdAndDelete("123");
-  //     expect(result).toBe(mockSession);
-  //     expect(CacheClass.deleteHashCacheById).toHaveBeenCalledWith(setSessionHashKey("123"));
-  //   });
-  // });
-
-  // describe.skip("findByIdAndUpdate method test suite", () => {
-  //   it("Should return null if there was no data", async () => {
-  //     SessionModel.findByIdAndUpdate.mockResolvedValue(null);
-  //     const sessionClass = new SessionDb();
-  //     const result = await sessionClass.findByIdAndUpdate("123", { userId: "newUser" });
-  //     expect(result).toBeNull();
-  //     expect(CacheClass.replaceCacheData).not.toHaveBeenCalled();
-  //   });
-
-  //   it("Should return data of type SessionDocument when updated", async () => {
-  //     const mockSession: SessionDocument = {
-  //       _id: "123",
-  //       userId: "user1",
-  //       userAgent: "Mozilla/5.0",
-  //       createdAt: new Date(),
-  //       expiresAt: new Date(),
-  //       save: jest.fn(),
-  //       toObject: jest.fn().mockReturnValue({
-  //         _id: "123",
-  //         userId: "newUser",
-  //         userAgent: "Mozilla/5.0",
-  //         createdAt: new Date(),
-  //         expiresAt: new Date(),
-  //       }),
-  //     };
-
-  //     SessionModel.findByIdAndUpdate.mockResolvedValue(mockSession);
-  //     CacheClass.replaceCacheData.mockResolvedValue(true);
-
-  //     const sessionClass = new SessionDb();
-  //     const result = await sessionClass.findByIdAndUpdate("123", { userId: "newUser" });
-  //     expect(result).toBe(mockSession);
-  //     expect(CacheClass.replaceCacheData).toHaveBeenCalled();
-  //     expect(SessionModel.findByIdAndUpdate).toHaveBeenCalledWith("123", { userId: "newUser" });
-  //   });
-  // });
 });

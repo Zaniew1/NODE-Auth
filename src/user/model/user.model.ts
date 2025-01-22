@@ -50,7 +50,7 @@ userSchema.methods.comparePassword = async function (val: string) {
 
 userSchema.methods.omitPassword = function () {
   const user = this.toObject();
-  delete user.password;
+  // delete user.password;
   return user;
 };
 

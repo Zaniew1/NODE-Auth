@@ -59,7 +59,7 @@ export default class SessionClass implements SessionClassType {
   }
   async findByIdAndDelete(id: SessionDocument["_id"]): Promise<SessionDocument | null> {
     await CacheClass.deleteHashCacheById(setSessionHashKey(id));
-    return await SessionModel.findByIdAndDelete({ id });
+    return await SessionModel.findByIdAndDelete(String(id));
   }
   async findByIdAndUpdate(id: SessionDocument["_id"], properties: Partial<SessionDocument>): Promise<SessionDocument | null> {
     Object.entries(CacheClass.serializeCache<Partial<SessionDocument>>(properties)).forEach(async ([key, value]) => {

@@ -17,6 +17,7 @@ import { AssertionError } from "node:assert";
 import { JWT } from "../../utils/helpers/Jwt";
 import SessionModel from "../../session/model/session.model";
 import mongoose from "mongoose";
+import DatabaseClass from "../../utils/Database/Database";
 
 const mockObjectId = new mongoose.Types.ObjectId("123456789123456789123456");
 const mocksessionId = new mongoose.Types.ObjectId("123456789123456789123456");
@@ -152,7 +153,7 @@ describe("authController test suite", () => {
       const resMock = mockResponse() as Response;
       let jwtSpy: jest.SpyInstance = jest.spyOn(JWT, "validateAccessToken");
       jwtSpy.mockReturnValueOnce({ userId: mockObjectId, sessionId: mocksessionId });
-      const sessionSpy = jest.spyOn(SessionModel, "findByIdAndDelete").mockResolvedValueOnce({});
+      const sessionSpy = jest.spyOn(DatabaseClass.session, "findByIdAndDelete").mockResolvedValueOnce(null);
       const clearCookiesSpy = jest.spyOn(CookiesClass, "clearAuthCookies").mockReturnValueOnce(resMock);
       await logoutHandler(reqMock, resMock, mockNext);
       expect(jwtSpy).toHaveBeenCalledWith(accessTokenMock);

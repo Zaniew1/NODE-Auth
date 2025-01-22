@@ -15,7 +15,8 @@ export interface CacheClassType {
   deserializeCache<T extends object>(flatObject: FlatObject): T;
 }
 
-class Cache implements CacheClassType {
+export class Cache implements CacheClassType {
+  constructor() {}
   public replaceCacheData = async <T extends object>(key: string, field: keyof T, value: string): Promise<number | null> => {
     try {
       return await redisClient.HSET(key, field as string, value as string);
@@ -120,7 +121,8 @@ class Cache implements CacheClassType {
     return deserializedObj as T;
   };
 }
-class CacheProxyClass implements CacheClassType {
+export class CacheProxyClass implements CacheClassType {
+  constructor() {}
   public replaceCacheData = async <T extends object>(key: string, field: keyof T, value: string): Promise<number | null> => {
     return null;
   };
@@ -153,5 +155,6 @@ class CacheProxyClass implements CacheClassType {
     return deserializedObj as T;
   };
 }
+
 const cache = REDIS_ON == "true" ? new Cache() : new CacheProxyClass();
 export default cache;

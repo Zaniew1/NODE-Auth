@@ -11,16 +11,13 @@ import { hashPassword } from "../../utils/helpers/PasswordManage";
 import { Message } from "../../utils/constants/messages";
 import { HttpErrors } from "../../utils/constants/http";
 import DatabaseClass from "../../utils/Database/Database";
-import CacheClass from "../../redis/CacheClass";
-import { UserDocument } from "../../user/model/user.model";
-export const testSer = async () => {};
 
 export const createUserService = async (data: newUserType) => {
-  const { name, password, email, surname, userAgent } = data as newUserType;
+  const { email, userAgent } = data as newUserType;
   //check user existance and create if not exist
   const userByEmail = await DatabaseClass.user.existsByEmail(email);
-  appAssert(userByEmail, HttpErrors.CONFLICT, Message.FAIL_USER_EMAIL_EXIST);
-  const user = await DatabaseClass.user.create({ email, userAgent, password, name, surname });
+  appAssert(!userByEmail, HttpErrors.CONFLICT, Message.FAIL_USER_EMAIL_EXIST);
+  const user = await DatabaseClass.user.create(data);
 
   // create verification code
   const verificationCode = await DatabaseClass.verificationCode.create({
@@ -80,7 +77,8 @@ export const refreshAccessTokenUserService = async (refreshToken: string) => {
   appAssert(payload, HttpErrors.UNAUTHORIZED, Message.FAIL_TOKEN_REFRESH_INVALID);
   const session = await DatabaseClass.session.findById(payload.sessionId);
   const now = Date.now();
-  appAssert(session && session.expiresAt.getTime() > now, HttpErrors.UNAUTHORIZED, Message.FAIL_SESSION_EXPIRED);
+  appAssert(session, HttpErrors.UNAUTHORIZED, Message.FAIL_SESSION_EXPIRED);
+  appAssert(session.expiresAt.getTime() > now, HttpErrors.UNAUTHORIZED, Message.FAIL_SESSION_EXPIRED);
 
   // refresh session if it's coming to the end (1day)
   const sessionExpiringSoon = session.expiresAt.getTime() - now <= ONE_DAY_MS;
@@ -99,14 +97,12 @@ export const refreshAccessTokenUserService = async (refreshToken: string) => {
   };
 };
 export const verifyUserEmailService = async (verificationCode: VerificationCodeDocument["_id"]) => {
-  let validCode = await DatabaseClass.verificationCode.findOnePasswordResetById(verificationCode);
+  const validCode = await DatabaseClass.verificationCode.findOneByIdAndType(verificationCode, VerificationCodeType.EmailVerification);
   appAssert(validCode, HttpErrors.NOT_FOUND, Message.FAIL_VERIFICATION_CODE_INVALID);
   // get user and set verified = true
   const verifiedUser = await DatabaseClass.user.findByIdAndUpdate(validCode.userId, { verified: true });
   appAssert(verifiedUser, HttpErrors.INTERNAL_SERVER_ERROR, Message.FAIL_USER_UNVERIFIED);
   // delete verification code
-  await DatabaseClass.verificationCode.findByIdAndDelete(verificationCode);
-
   await DatabaseClass.verificationCode.findByIdAndDelete(validCode._id);
   return {
     user: verifiedUser.omitPassword(),
@@ -141,14 +137,12 @@ export type changePasswordType = {
 };
 export const changePasswordService = async ({ verificationCode, password }: changePasswordType) => {
   // find verification code that has been sent via mail
-  const validCode = await DatabaseClass.verificationCode.findOnePasswordResetById(verificationCode);
-  console.log(validCode);
+  const validCode = await DatabaseClass.verificationCode.findOneByIdAndType(verificationCode, VerificationCodeType.PasswordReset);
   appAssert(validCode, HttpErrors.NOT_FOUND, Message.FAIL_VERIFICATION_CODE_INVALID);
 
   const newPassword = await hashPassword(password);
   //update password
   const updatedUser = await DatabaseClass.user.findByIdAndUpdate(validCode.userId, { password: newPassword });
-  console.log(updatedUser);
   appAssert(updatedUser, HttpErrors.INTERNAL_SERVER_ERROR, Message.FAIL_USER_PASSWORD_RESET);
 
   // delete verification code

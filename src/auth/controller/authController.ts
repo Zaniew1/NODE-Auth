@@ -6,7 +6,6 @@ import loginSchema, { emailSchema } from "../zodSchemas/loginSchema";
 import changePassSchema from "../zodSchemas/changePassSchema";
 import { Message } from "../../utils/constants/messages";
 import {
-  testSer,
   createUserService,
   loginUserService,
   refreshAccessTokenUserService,
@@ -19,6 +18,7 @@ import CookiesClass from "../../utils/helpers/cookies";
 import { JWT } from "../../utils/helpers/Jwt";
 import appAssert from "../../utils/helpers/appAssert";
 import DatabaseClass from "../../utils/Database/Database";
+import { access } from "node:fs";
 export const registerHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   // validate data with zod
   const request = registerSchema.parse({ ...req.body, userAgent: req.headers["user-agent"] });
@@ -48,7 +48,6 @@ export const logoutHandler: RequestHandler = catchAsync(async (req: Request, res
   const payload = JWT.validateAccessToken(accessToken);
   // remove session from db
   await DatabaseClass.session.findByIdAndDelete(payload.sessionId);
-
   // clear cookies
   return CookiesClass.clearAuthCookies(res).status(HttpErrors.OK).json({ message: Message.SUCCESS_USER_LOGOUT });
 });
@@ -86,8 +85,4 @@ export const refreshHandler: RequestHandler = catchAsync(async (req: Request, re
   res.status(HttpErrors.OK).cookie("accessToken", accessToken, CookiesClass.getAccessTokenCookieOptions()).json({
     message: Message.SUCCESS_USER_REFRESHED_TOKEN,
   });
-});
-
-export const test: RequestHandler = catchAsync(async (req: Request, res: Response) => {
-  await testSer();
 });

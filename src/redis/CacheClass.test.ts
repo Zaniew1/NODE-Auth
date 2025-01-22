@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 import { UserDocument } from "../user/model/user.model";
-import CacheClass from "./CacheClass";
+import CacheClass, { CacheProxyClass, Cache } from "./CacheClass";
 import redisClient from "./redisClient";
+
 jest.mock("./redisClient", () => ({
   HSET: jest.fn(),
   HGETALL: jest.fn(),
@@ -11,6 +12,8 @@ jest.mock("./redisClient", () => ({
   SET: jest.fn(),
   GET: jest.fn(),
 }));
+
+const ProxyClass = new CacheProxyClass();
 const mockObjectId = "123456789123456789123456";
 describe("CacheClass test suite", () => {
   afterAll(() => {
@@ -302,9 +305,59 @@ describe("CacheClass test suite", () => {
     });
     it("Should return empty object if attributes are empty", async () => {
       const attributes = {};
-
       const result = await CacheClass.deserializeCache<Partial<UserDocument>>(attributes);
       expect(result).toEqual({});
     });
+  });
+});
+
+describe("CacheProxyClass test suite", () => {
+  beforeAll(() => {
+    process.env.REDIS_ON = "false";
+  });
+  afterAll(() => {
+    process.env.REDIS_ON = "true";
+  });
+  it("Should return null from replaceCacheData", async () => {
+    const result = await ProxyClass.replaceCacheData<Partial<UserDocument>>("", "name", "123");
+    expect(result).toBeNull();
+  });
+  it("Should return null from setHashCache", async () => {
+    const result = await ProxyClass.setHashCache<Partial<UserDocument>>("", { name: "123" });
+    expect(result).toBeNull();
+  });
+  it("Should return null from getHashCache", async () => {
+    const result = await ProxyClass.getHashCache<Partial<UserDocument>>("");
+    expect(result).toBeNull();
+  });
+  it("Should return null from deleteHashCacheById", async () => {
+    const result = await ProxyClass.deleteHashCacheById("");
+    expect(result).toBeNull();
+  });
+  it("Should return null from setCacheList", async () => {
+    const result = await ProxyClass.setCacheList<UserDocument["_id"]>("", new mongoose.Types.ObjectId(mockObjectId));
+    expect(result).toBeNull();
+  });
+  it("Should return null from getCacheList", async () => {
+    const result = await ProxyClass.getCacheList("");
+    expect(result).toBeNull();
+  });
+  it("Should return null from setStringCache", async () => {
+    const result = await ProxyClass.setStringCache("", "name");
+    expect(result).toBeNull();
+  });
+  it("Should return null from getStringCache", async () => {
+    const result = await ProxyClass.getStringCache("");
+    expect(result).toBeNull();
+  });
+  it("Should return null from serializeCache", async () => {
+    const result = await ProxyClass.serializeCache<Partial<UserDocument>>({ name: "123" });
+    expect(result).toEqual({});
+  });
+  it("Should return null from deserializeCache", async () => {
+    process.env.REDIS_ON = "false";
+
+    const result = await ProxyClass.deserializeCache<Partial<UserDocument>>({ name: "123" });
+    expect(result).toEqual({});
   });
 });

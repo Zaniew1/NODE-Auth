@@ -13,7 +13,7 @@ export interface VerificationCodeClassType {
     id: UserDocument["id"],
     type: VerificationCodeType.PasswordReset | VerificationCodeType.EmailVerification
   ): Promise<number>;
-  findOnePasswordResetById(id: VerificationCodeDocument["_id"]): Promise<VerificationCodeDocument | null>;
+  findOneByIdAndType(id: VerificationCodeDocument["_id"], type: string): Promise<VerificationCodeDocument | null>;
 }
 
 export default class VerificationCodeClass implements VerificationCodeClassType {
@@ -49,10 +49,10 @@ export default class VerificationCodeClass implements VerificationCodeClassType 
       createdAt: { $gt: fiveMinAgo },
     });
   }
-  async findOnePasswordResetById(id: VerificationCodeDocument["_id"]): Promise<VerificationCodeDocument | null> {
-    const verificationCode = await CacheClass.getHashCache<VerificationCodeDocument>(setVerificationCodeHashKey(id));
-    if (!verificationCode || verificationCode.expiresAt < new Date() || verificationCode.type !== VerificationCodeType.PasswordReset) {
-      const code = await VerificationModel.findOne({ _id: id, type: VerificationCodeType.PasswordReset, expiresAt: { $gt: new Date() } });
+  async findOneByIdAndType(_id: VerificationCodeDocument["_id"], type: string): Promise<VerificationCodeDocument | null> {
+    const verificationCode = await CacheClass.getHashCache<VerificationCodeDocument>(setVerificationCodeHashKey(_id));
+    if (!verificationCode || verificationCode.expiresAt < new Date() || verificationCode.type !== type) {
+      const code = await VerificationModel.findOne({ _id, type, expiresAt: { $gt: new Date() } });
       if (code) await CacheClass.setHashCache<VerificationCodeDocument>(setVerificationCodeHashKey(code._id), code);
       return code;
     }
