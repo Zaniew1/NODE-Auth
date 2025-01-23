@@ -77,21 +77,16 @@ export const refreshAccessTokenUserService = async (refreshToken: string) => {
   appAssert(payload, HttpErrors.UNAUTHORIZED, Message.FAIL_TOKEN_REFRESH_INVALID);
   const session = await DatabaseClass.session.findById(payload.sessionId);
   const now = Date.now();
-  appAssert(session, HttpErrors.UNAUTHORIZED, Message.FAIL_SESSION_EXPIRED);
-  session.expiresAt = new Date(session.expiresAt);
-  appAssert(session.expiresAt.getTime() > now, HttpErrors.UNAUTHORIZED, Message.FAIL_SESSION_EXPIRED);
-
+  appAssert(session && new Date(session.expiresAt).getTime() > now, HttpErrors.UNAUTHORIZED, Message.FAIL_SESSION_EXPIRED);
   // refresh session if it's coming to the end (1day)
-  const sessionExpiringSoon = session.expiresAt.getTime() - now <= ONE_DAY_MS;
+  const sessionExpiringSoon = new Date(session.expiresAt).getTime() - now <= ONE_DAY_MS;
   if (sessionExpiringSoon === true) {
     await DatabaseClass.session.findByIdAndUpdate(session._id, { expiresAt: thirtyDaysFromNow() });
-    session.expiresAt = thirtyDaysFromNow();
-    // await replaceCacheData<SessionDocument>(setSessionHashKey(payload.sessionId), "expiresAt", String(thirtyDaysFromNow()));
-    await session.save();
   }
   const sessionId = session._id;
   const newRefreshToken = sessionExpiringSoon ? JWT.signRefreshToken({ sessionId }) : undefined;
   const accessToken = JWT.signAccessToken({ userId: session.userId, sessionId });
+
   return {
     accessToken,
     newRefreshToken,

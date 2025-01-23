@@ -6,14 +6,16 @@ import { Message } from "../../utils/constants/messages";
 let mockAccessToken: string;
 let mockRefreshToken: string;
 const registerPath = "/api/v1.1.1/auth/register";
-
+const randomUid = Math.floor(Math.random() * 10000000);
+const userMail = `test${randomUid}12@gmail.com`;
 beforeAll(async () => {
   await connectDb();
   const res = await agent(app).post(registerPath).send({
     name: "test",
-    email: "tes1t1213@gmail.com",
-    password: "e2etest1@#",
-    confirmPassword: "e2etest1@#",
+    email: userMail,
+    surname: "Mateusz",
+    password: "e2etest1@#1",
+    confirmPassword: "e2etest1@#1",
   });
   // mockRefreshToken = res.header;
   if (Array.isArray(res.header["set-cookie"])) {
@@ -42,7 +44,7 @@ describe("User controller E2E tests", () => {
         .send({});
       expect(res.statusCode).toBe(HttpErrors.OK);
       expect(res.body).toBeDefined();
-      expect(res.body).toMatchObject({ email: "tes1t1213@gmail.com" });
+      expect(res.body).toMatchObject({ email: userMail });
     });
     it("Should throw validation error in no accessToken", async () => {
       const res = await agent(app)

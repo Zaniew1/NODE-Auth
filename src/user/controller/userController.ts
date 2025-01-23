@@ -8,7 +8,6 @@ import DatabaseClass from "../../utils/Database/Database";
 
 export const getUserHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const userID = objectIdSchema.parse(res.locals.userId);
-  console.log("NO KURWA");
   const user = await DatabaseClass.user.findById(userID);
   appAssert(user, HttpErrors.NOT_FOUND, Message.FAIL_USER_NOT_FOUND);
   res.status(HttpErrors.OK).json(user.omitPassword());

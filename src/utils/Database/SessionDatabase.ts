@@ -71,6 +71,7 @@ export default class SessionClass implements SessionClassType {
       const typedKey = key as keyof SessionDocument;
       await CacheClass.replaceCacheData<SessionDocument>(setSessionHashKey(id), typedKey, String(value as SessionDocument[typeof typedKey]));
     });
-    return await SessionModel.findByIdAndUpdate(id, properties);
+    const updatedSession = await SessionModel.findOneAndUpdate({ _id: id }, properties);
+    return updatedSession;
   }
 }

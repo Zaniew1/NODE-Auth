@@ -54,7 +54,7 @@ export default class UserClass implements UserClassType {
       if (user) await CacheClass.setHashCache<UserDocument>(setUserHashKey(id), user.toObject());
       return user;
     }
-    return userCache;
+    return new UserModel(userCache);
   }
   async findByIdAndDelete(id: UserDocument["_id"]): Promise<UserDocument | null> {
     await CacheClass.deleteHashCacheById(setUserHashKey(id));
