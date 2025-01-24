@@ -30,15 +30,13 @@ export default class UserClass implements UserClassType {
   async findOneByMail(email: string): Promise<UserDocument | null> {
     const userId = await CacheClass.getStringCache(setUniqueEmailStringKey(email));
     if (userId) {
-      const userCache = await CacheClass.getHashCache<UserDocument>(setUserHashKey(userId));
-      if (!userCache) {
-        const user = await UserModel.findOne({ email });
-        if (user) await CacheClass.setHashCache<UserDocument>(setUserHashKey(userId), user.toObject());
-        return user;
-      }
-      return new UserModel(userCache);
+      return new UserModel(await CacheClass.getHashCache<UserDocument>(setUserHashKey(userId)));
+    } else {
+      const user = await UserModel.findOne({ email });
+      if (user) await CacheClass.setStringCache(setUniqueEmailStringKey(user.email), String(user._id));
+      if (user) await CacheClass.setHashCache<UserDocument>(setUserHashKey(user._id), user.toObject());
+      return user;
     }
-    return null;
   }
   async findByIdAndUpdate(id: UserDocument["_id"], properties: Partial<UserDocument>): Promise<UserDocument | null> {
     Object.entries(CacheClass.serializeCache<Partial<UserDocument>>(properties)).forEach(async ([key, value]) => {

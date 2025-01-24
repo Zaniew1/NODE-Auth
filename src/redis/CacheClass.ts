@@ -89,6 +89,7 @@ export class Cache implements CacheClassType {
   };
   public serializeCache = <T extends object>(attributes: T): FlatObject => {
     const serializedObj: FlatObject = {};
+    if (!attributes) return {};
     Object.entries(attributes).forEach(([key, value]) => {
       if (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || mongoose.isValidObjectId(value)) {
         serializedObj[key] = String(value);
