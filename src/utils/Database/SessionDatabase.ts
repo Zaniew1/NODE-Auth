@@ -62,14 +62,15 @@ export default class SessionClass implements SessionClassType {
       });
     }
     return sessions.sort((a, b) => {
-      const dateA = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
-      const dateB = b.createdAt instanceof Date ? b.createdAt.getTime() : 0;
+      const dateA = a.createdAt.getTime();
+      const dateB = b.createdAt.getTime();
       return dateA - dateB;
     });
   }
   async findByIdAndDelete(id: SessionDocument["_id"]): Promise<SessionDocument | null> {
     await CacheClass.deleteHashCacheById(setSessionHashKey(id));
-    return await SessionModel.findByIdAndDelete(String(id));
+    const session = await SessionModel.findByIdAndDelete(String(id));
+    return session;
   }
   async findByIdAndUpdate(id: SessionDocument["_id"], properties: Partial<SessionDocument>): Promise<SessionDocument | null> {
     Object.entries(CacheClass.serializeCache<Partial<SessionDocument>>(properties)).forEach(async ([key, value]) => {

@@ -7,7 +7,6 @@ import z from "zod";
 import { AssertionError } from "node:assert";
 import mongoose from "mongoose";
 import DatabaseClass from "../../utils/Database/Database";
-import { UserDocument } from "../../user/model/user.model";
 const mockUserId = new mongoose.Types.ObjectId("123456789123456789123456");
 const mockSessionId = new mongoose.Types.ObjectId("123456789123456789123455");
 const mockRequest = (): Partial<Request> => {

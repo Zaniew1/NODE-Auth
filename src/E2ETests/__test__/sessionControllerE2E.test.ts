@@ -46,8 +46,8 @@ describe("Session controller E2E tests", () => {
         .set("Cookie", [`accessToken=${mockAccessToken};refreshToken=${mockRefreshToken}`])
         .send({});
       expect(res.statusCode).toBe(HttpErrors.OK);
-      expect(res.body.sessions[0]._doc._id).toBeDefined();
-      mockSessionToDelete = res.body.sessions[0]._doc._id;
+      expect(res.body.sessions[0]._id).toBeDefined();
+      mockSessionToDelete = res.body.sessions[0]._id;
     });
     it("Should throw validation error in no accessToken", async () => {
       const res = await agent(app)

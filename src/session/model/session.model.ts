@@ -8,6 +8,7 @@ export interface SessionDocument extends mongoose.Document {
   userAgent?: string;
   createdAt: Date;
   expiresAt: Date;
+  isCurrent?: boolean;
 }
 
 const sessionSchema = new mongoose.Schema<SessionDocument>({

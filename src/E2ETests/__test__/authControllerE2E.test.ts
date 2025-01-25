@@ -3,15 +3,14 @@ import { connectDb, closeDb } from "./db-handler";
 import app from "../../index";
 import { Message } from "../../utils/constants/messages";
 import { HttpErrors } from "../../utils/constants/http";
-import VerificationCodeModel, { VerificationCodeDocument } from "../../auth/model/verificationCode.model";
+import { VerificationCodeDocument } from "../../auth/model/verificationCode.model";
 import { VerificationCodeType } from "../../types/verificationCodeManage";
 import { oneYearFromNow, oneHourFromNow } from "../../utils/helpers/date";
 import { UserDocument } from "../../user/model/user.model";
 import DatabaseClass from "../../utils/Database/Database";
-import mongoose from "mongoose";
-import { APP_VERSION } from "../../utils/constants/env";
 
 const randomUid = Math.floor(Math.random() * 10000000);
+const userEmail = `test${randomUid}12@gmail.com`;
 beforeAll(async () => {
   await connectDb();
 });
@@ -34,7 +33,7 @@ describe("Auth controller E2E tests", () => {
     it("Should throw validation user", async () => {
       const res = await agent(app).post(registerPath).send({
         name: "test",
-        email: `test1@gmail.com`,
+        email: userEmail,
         password: "e2etest1@#",
       });
       expect(res.statusCode).toBe(400);
@@ -42,15 +41,13 @@ describe("Auth controller E2E tests", () => {
       expect(JSON.parse(res.text).errors[0].message).toBe("Confirm password is required");
     });
     it("Should add user", async () => {
-      const res = await agent(app)
-        .post(registerPath)
-        .send({
-          name: "test",
-          email: `test${randomUid}12@gmail.com`,
-          surname: "Mateusz",
-          password: "e2etest1@#1",
-          confirmPassword: "e2etest1@#1",
-        });
+      const res = await agent(app).post(registerPath).send({
+        name: "test",
+        email: userEmail,
+        surname: "Mateusz",
+        password: "e2etest1@#1",
+        confirmPassword: "e2etest1@#1",
+      });
       mockUser = res.body.user as UserDocument;
       mockVerificateEmailCode = await DatabaseClass.verificationCode.create({
         userId: mockUser._id,
@@ -78,7 +75,7 @@ describe("Auth controller E2E tests", () => {
   describe("[POST] - LOGIN USER ", () => {
     it("Should throw validation error", async () => {
       const res = await agent(app).post(loginPath).send({
-        email: "tes1t1213@gmail.com",
+        email: userEmail,
       });
       expect(JSON.parse(res.text).errors[0].path).toBe("password");
       expect(JSON.parse(res.text).errors[0].message).toBe("Password is required");
@@ -86,8 +83,8 @@ describe("Auth controller E2E tests", () => {
     });
     it("Should login user", async () => {
       const res = await agent(app).post(loginPath).send({
-        email: "tes1t1213@gmail.com",
-        password: "e2etest1@#",
+        email: userEmail,
+        password: "e2easdasdtest1@#",
       });
       expect(res.statusCode).toBe(HttpErrors.OK);
       expect(res.body.message).toBe(Message.SUCCESS_USER_LOGIN);

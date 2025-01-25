@@ -64,7 +64,6 @@ export const loginUserService = async ({ password, email, userAgent }: loginUser
   // sign access token & refresh
   const refreshToken = JWT.signRefreshToken(sessionInfo);
   const accessToken = JWT.signAccessToken({ ...sessionInfo, userId: user._id });
-
   return {
     user: user.omitPassword(),
     accessToken,

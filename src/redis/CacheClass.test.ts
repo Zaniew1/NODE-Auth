@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import { UserDocument } from "../user/model/user.model";
-import CacheClass, { CacheProxyClass, Cache } from "./CacheClass";
+import CacheClass from "./CacheClass";
+import { CacheProxyClass } from "./CacheProxy";
+import { Cache } from "./Cache";
 import redisClient from "./redisClient";
 import { REDIS_ON } from "../utils/constants/env";
 
@@ -282,7 +284,6 @@ if (REDIS_ON == "true") {
       });
       it("Should return empty object if attributes were empty", async () => {
         const attributes = {};
-
         const result = await CacheClass.serializeCache<Partial<UserDocument>>(attributes);
         expect(result).toEqual({});
       });
