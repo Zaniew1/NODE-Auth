@@ -2,7 +2,7 @@ name: Test Project
 on: 
   push:
     branches:
-      - 'gihubactions'
+      - 'main'
 jobs:
   test:
     environment: node-auth-envs
@@ -27,6 +27,7 @@ jobs:
           MONGO_DB_PASS: ${{ secrets.MONGO_DB_PASS }}
           NODE_ENV: ${{ secrets.NODE_ENV }}
           PORT: ${{ secrets.PORT }}
+          REDIS_ON: ${{ secrets.REDIS_ON }}
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PASS: ${{ secrets.REDIS_PASS }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
