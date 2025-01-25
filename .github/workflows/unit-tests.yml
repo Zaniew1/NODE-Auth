@@ -1,0 +1,68 @@
+name: Test Project
+on: 
+  push:
+    branches:
+      - 'main'
+jobs:
+  test:
+    environment: node-auth-envs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download code
+        uses: actions/checkout@v4
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: dependencies-modules-${{ hashFiles('**/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci 
+      - name: Run tests
+        env:
+          APP_ORIGIN: ${{ secrets.APP_ORIGIN }}
+          APP_VERSION: ${{ secrets.APP_VERSION }}
+          JWT_EXPIRES_IN: ${{ secrets.JWT_EXPIRES_IN }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          MONGO_DB_PASS: ${{ secrets.MONGO_DB_PASS }}
+          NODE_ENV: ${{ secrets.NODE_ENV }}
+          PORT: ${{ secrets.PORT }}
+          REDIS_ON: ${{ secrets.REDIS_ON }}
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          REDIS_PASS: ${{ secrets.REDIS_PASS }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
+        run: npm run test
+      - name: Run test coverage
+        run: npm run coverage
+  build: 
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download code
+        uses: actions/checkout@v4
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: dependencies-modules-${{ hashFiles('**/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci 
+      - name: Build project
+        run: npm run build
+      - name: Upload arifacts
+        uses: actions/upload-artifact@v4
+        with: 
+          name: dist-files
+          path: dist
+  deploy: 
+    needs: [test,build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get build artifacts
+        uses: actions/download-artifact@v4
+        with: 
+          name: dist-files
+      - name: Show content
+        run: ls
+      - name: Deploy
+        run: echo "Deploying on server -dockerhub or AWS or K8s"
