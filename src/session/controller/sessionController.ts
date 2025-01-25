@@ -1,4 +1,3 @@
-import SessionModel from "../model/session.model";
 import { HttpErrors } from "../../utils/constants/http";
 import appAssert from "../../utils/helpers/appAssert";
 import catchAsync from "../../utils/helpers/catchAsync";
@@ -6,18 +5,21 @@ import { Message } from "../../utils/constants/messages";
 import { RequestHandler, Request, Response, NextFunction } from "express";
 import { objectIdSchema } from "../../auth/zodSchemas/ObjectIdSchema";
 import DatabaseClass from "../../utils/Database/Database";
+import { SessionDocument } from "../model/session.model";
 export const getSessionHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const userID = objectIdSchema.parse(res.locals.userId);
   const sessionID = objectIdSchema.parse(res.locals.sessionId);
   const sessions = await DatabaseClass.session.findSessionsByUserId(userID);
   appAssert(sessions.length > 0, HttpErrors.NOT_FOUND, Message.FAIL_SESSION_NOT_FOUND);
-
   // set isCurrent key for current session
-  const sessionsAndCurrentSession = sessions.map((session) => ({
-    ...session,
-    ...(session._id === sessionID && { isCurrent: true }),
-  }));
-
+  const sessionsAndCurrentSession: SessionDocument[] = [];
+  sessions.forEach((session) => {
+    if (session._id == sessionID) {
+      sessionsAndCurrentSession.push({ ...session.toObject(), isCurrent: true });
+    } else {
+      sessionsAndCurrentSession.push(session);
+    }
+  });
   res.status(HttpErrors.OK).json({ sessions: sessionsAndCurrentSession });
 });
 export const deleteSessionHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {

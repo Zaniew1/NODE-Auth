@@ -6,16 +6,20 @@ import { Message } from "../../utils/constants/messages";
 let mockAccessToken: string;
 let mockRefreshToken: string;
 let mockSessionToDelete: string;
+const randomUid = Math.floor(Math.random() * 10000000);
+
 const registerPath = "/api/v1.1.1/auth/register";
 beforeAll(async () => {
   await connectDb();
-  const res = await agent(app).post(registerPath).send({
-    name: "test",
-    email: "tes1t1213@gmail.com",
-    password: "e2etest1@#",
-    confirmPassword: "e2etest1@#",
-  });
-  // mockRefreshToken = res.header;
+  const res = await agent(app)
+    .post(registerPath)
+    .send({
+      name: "test",
+      email: `test${randomUid}12@gmail.com`,
+      surname: "Mateusz",
+      password: "e2etest1@#1",
+      confirmPassword: "e2etest1@#1",
+    });
   if (Array.isArray(res.header["set-cookie"])) {
     mockAccessToken = res.header["set-cookie"]
       .find((cookie: string) => cookie.startsWith("accessToken="))
@@ -42,8 +46,8 @@ describe("Session controller E2E tests", () => {
         .set("Cookie", [`accessToken=${mockAccessToken};refreshToken=${mockRefreshToken}`])
         .send({});
       expect(res.statusCode).toBe(HttpErrors.OK);
-      expect(res.body.sessions[0]._doc._id).toBeDefined();
-      mockSessionToDelete = res.body.sessions[0]._doc._id;
+      expect(res.body.sessions[0]._id).toBeDefined();
+      mockSessionToDelete = res.body.sessions[0]._id;
     });
     it("Should throw validation error in no accessToken", async () => {
       const res = await agent(app)

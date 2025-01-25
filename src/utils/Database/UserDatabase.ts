@@ -10,17 +10,17 @@ export interface UserClassType {
   findById(id: UserDocument["_id"]): Promise<UserDocument | null>;
   findByIdAndDelete(id: UserDocument["_id"]): Promise<UserDocument | null>;
 }
-
 export default class UserClass implements UserClassType {
   async existsByEmail(email: string): Promise<UserDocument["_id"] | null> {
     let userByEmail = await CacheClass.getStringCache(setUniqueEmailStringKey(email));
     if (!userByEmail) {
-      const user = await UserModel.exists({ email });
-      if (user) await CacheClass.setStringCache(setUniqueEmailStringKey(email), user._id as string);
+      const user = (await UserModel.exists({ email })) as UserDocument["_id"];
+      if (user) await CacheClass.setStringCache(setUniqueEmailStringKey(email), String(user._id));
       return user;
     }
     return userByEmail;
   }
+
   async create(properties: Partial<UserDocument>): Promise<UserDocument> {
     const user = await UserModel.create(properties);
     await CacheClass.setHashCache<UserDocument>(setUserHashKey(user._id), user.toObject());
@@ -29,13 +29,14 @@ export default class UserClass implements UserClassType {
   }
   async findOneByMail(email: string): Promise<UserDocument | null> {
     const userId = await CacheClass.getStringCache(setUniqueEmailStringKey(email));
-    const userCache = await CacheClass.getHashCache<UserDocument>(setUserHashKey(userId));
-    if (!userCache) {
+    if (userId) {
+      return new UserModel(await CacheClass.getHashCache<UserDocument>(setUserHashKey(userId)));
+    } else {
       const user = await UserModel.findOne({ email });
-      if (user) await CacheClass.setHashCache<UserDocument>(setUserHashKey(userId), user.toObject());
+      if (user) await CacheClass.setStringCache(setUniqueEmailStringKey(user.email), String(user._id));
+      if (user) await CacheClass.setHashCache<UserDocument>(setUserHashKey(user._id), user.toObject());
       return user;
     }
-    return new UserModel(userCache);
   }
   async findByIdAndUpdate(id: UserDocument["_id"], properties: Partial<UserDocument>): Promise<UserDocument | null> {
     Object.entries(CacheClass.serializeCache<Partial<UserDocument>>(properties)).forEach(async ([key, value]) => {
@@ -51,7 +52,7 @@ export default class UserClass implements UserClassType {
       if (user) await CacheClass.setHashCache<UserDocument>(setUserHashKey(id), user.toObject());
       return user;
     }
-    return userCache;
+    return new UserModel(userCache);
   }
   async findByIdAndDelete(id: UserDocument["_id"]): Promise<UserDocument | null> {
     await CacheClass.deleteHashCacheById(setUserHashKey(id));

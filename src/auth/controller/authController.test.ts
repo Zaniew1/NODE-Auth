@@ -16,7 +16,12 @@ import z, { ZodError } from "zod";
 import { AssertionError } from "node:assert";
 import { JWT } from "../../utils/helpers/Jwt";
 import SessionModel from "../../session/model/session.model";
-import AppError from "../../utils/helpers/appError";
+import mongoose from "mongoose";
+import DatabaseClass from "../../utils/Database/Database";
+
+const mockObjectId = new mongoose.Types.ObjectId("123456789123456789123456");
+const mocksessionId = new mongoose.Types.ObjectId("123456789123456789123456");
+
 const mockRequest = (): Partial<Request> => {
   return {
     headers: {
@@ -144,16 +149,15 @@ describe("authController test suite", () => {
       const reqMock = mockRequest() as Request;
       const accessTokenMock =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2NzQ0YTE4OGY0NmMzNTM2YTQ3YTgwYTYiLCJ1c2VySWQiOiI2NzQ0YTE4OGY0NmMzNTM2YTQ3YTgwYTIiLCJpYXQiOjE3MzI1NTEwNDgsImV4cCI6MTczMjU1MTk0OCwiYXVkIjpbIlVzZXIiXX0.OGgHwwYygLVPGUZ3Dh2VxY9I1dXBWE6TKs_e-yk-PRo";
-      const sessionIdMock = "67290b913991ecf85c227fb9";
       reqMock.cookies.accessToken = accessTokenMock;
       const resMock = mockResponse() as Response;
       let jwtSpy: jest.SpyInstance = jest.spyOn(JWT, "validateAccessToken");
-      jwtSpy.mockReturnValueOnce({ userId: "123", sessionId: sessionIdMock });
-      const sessionSpy = jest.spyOn(SessionModel, "findByIdAndDelete").mockResolvedValueOnce({});
+      jwtSpy.mockReturnValueOnce({ userId: mockObjectId, sessionId: mocksessionId });
+      const sessionSpy = jest.spyOn(DatabaseClass.session, "findByIdAndDelete").mockResolvedValueOnce(null);
       const clearCookiesSpy = jest.spyOn(CookiesClass, "clearAuthCookies").mockReturnValueOnce(resMock);
       await logoutHandler(reqMock, resMock, mockNext);
       expect(jwtSpy).toHaveBeenCalledWith(accessTokenMock);
-      expect(sessionSpy).toHaveBeenCalledWith(sessionIdMock);
+      expect(sessionSpy).toHaveBeenCalledWith(mocksessionId);
       expect(clearCookiesSpy).toHaveBeenCalledWith(resMock);
       expect(resMock.status).toHaveBeenCalledWith(HttpErrors.OK);
       expect(resMock.json).toHaveBeenCalledWith({ message: Message.SUCCESS_USER_LOGOUT });
@@ -207,7 +211,7 @@ describe("authController test suite", () => {
       const verifyCode = "123123123123";
       reqMock.params.code = verifyCode;
       const mockUser = {
-        _id: "672b50c01df576319309286e",
+        _id: mockObjectId,
         email: "m.zaniewski19915@gmail.com",
         verified: true,
         createdAt: new Date("2024-11-06T11:19:28.526+00:00"),
@@ -242,7 +246,7 @@ describe("authController test suite", () => {
       reqMock.body.password = passMock;
       reqMock.body.verificationCode = verCodeMock;
       const mockUser = {
-        _id: "672b50c01df576319309286e",
+        _id: mockObjectId,
         email: "m.zaniewski19915@gmail.com",
         verified: true,
         createdAt: new Date("2024-11-06T11:19:28.526+00:00"),

@@ -4,8 +4,10 @@ import { AssertionError } from "node:assert";
 import { Message } from "../../constants/messages";
 import AppError, { AppErrorCode } from "../appError";
 import { HttpErrors } from "../../constants/http";
+import mongoose from "mongoose";
 jest.mock("jsonwebtoken");
-
+const mockUserId = new mongoose.Types.ObjectId("123456789123456789123456");
+const mocksessionId = new mongoose.Types.ObjectId("123456789123456789123456");
 describe("JWT class test suite", () => {
   afterEach(() => {
     jest.restoreAllMocks();
@@ -16,8 +18,8 @@ describe("JWT class test suite", () => {
   describe("signAccessToken method test suite", () => {
     it("Should return proper aceess token", async () => {
       const payloadMock: AccessTokenPayload = {
-        userId: "672b50c01df576319309286e",
-        sessionId: "67290b913991ecf85c227fb9",
+        userId: mockUserId,
+        sessionId: mocksessionId,
       };
       (sign as jest.Mock).mockReturnValueOnce("token");
       const signAccess = JWT.signAccessToken(payloadMock);
@@ -27,7 +29,7 @@ describe("JWT class test suite", () => {
   describe("signRefreshToken method test suite", () => {
     it("Should  return proper aceess token", async () => {
       const payloadMock: RefreshTokenPayload = {
-        sessionId: "67290b913991ecf85c227fb9",
+        sessionId: mocksessionId,
       };
       (sign as jest.Mock).mockReturnValueOnce("token");
       const signAccess = JWT.signRefreshToken(payloadMock);
@@ -38,8 +40,8 @@ describe("JWT class test suite", () => {
   describe("validateAccessToken method test suite", () => {
     it("Should return payload if successful", async () => {
       const payloadMock: AccessTokenPayload = {
-        userId: "123",
-        sessionId: "123",
+        userId: mockUserId,
+        sessionId: mocksessionId,
       };
       const token =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2NzQ0YTE4OGY0NmMzNTM2YTQ3YTgwYTYiLCJ1c2VySWQiOiI2NzQ0YTE4OGY0NmMzNTM2YTQ3YTgwYTIiLCJpYXQiOjE3MzI1NTEwNDgsImV4cCI6MTczMjU1MTk0OCwiYXVkIjpbIlVzZXIiXX0.OGgHwwYygLVPGUZ3Dh2VxY9I1dXBWE6TKs_e-yk-PRo";
@@ -51,7 +53,7 @@ describe("JWT class test suite", () => {
       const token =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2NzQ0YTE4OGY0NmMzNTM2YTQ3YTgwYTYiLCJ1c2VySWQiOiI2NzQ0YTE4OGY0NmMzNTM2YTQ3YTgwYTIiLCJpYXQiOjE3MzI1NTEwNDgsImV4cCI6MTczMjU1MTk0OCwiYXVkIjpbIlVzZXIiXX0.OGgHwwYygLVPGUZ3Dh2VxY9I1dXBWE6TKs_e-yk-PRo";
       const accessTokenSecret = "secret";
-      let findSpy: jest.SpyInstance = jest.spyOn(jwt, "verify").mockImplementationOnce(() => {
+      jest.spyOn(jwt, "verify").mockImplementationOnce(() => {
         throw new AppError(HttpErrors.UNAUTHORIZED, Message.FAIL_USER_NOT_AUTHORIZED, AppErrorCode.InvalidAccessToken);
       });
 
@@ -66,7 +68,7 @@ describe("JWT class test suite", () => {
   describe("validateRefreshToken method test suite", () => {
     it("Should return payload if successful", async () => {
       const payloadMock: RefreshTokenPayload = {
-        sessionId: "123",
+        sessionId: mocksessionId,
       };
       const token =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2NzQ0YTE4OGY0NmMzNTM2YTQ3YTgwYTYiLCJpYXQiOjE3MzI1NTEwNDgsImV4cCI6MTczNTE0MzA0OCwiYXVkIjpbIlVzZXIiXX0.4yfgGAW5yOiDbYmxoSphPIA9X5ZNcYrWh0yMIjUKB2U";

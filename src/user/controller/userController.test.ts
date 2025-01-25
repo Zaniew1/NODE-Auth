@@ -3,8 +3,10 @@ import z from "zod";
 import { Message } from "../../utils/constants/messages";
 import { HttpErrors } from "../../utils/constants/http";
 import { AssertionError } from "node:assert";
-import UserModel from "../model/user.model";
+import UserModel, { UserDocument } from "../model/user.model";
 import { NextFunction, Request, Response } from "express";
+import DatabaseClass from "../../utils/Database/Database";
+import mongoose from "mongoose";
 const mockRequest = (): Partial<Request> => {
   return {};
 };
@@ -17,15 +19,15 @@ const mockResponse = (): Partial<Response> => {
   };
 };
 const mockNext: NextFunction = jest.fn();
+const mockId = new mongoose.Types.ObjectId("123456789123456789123456");
 const userMock = {
-  _id: "672b50c01df576319309286e",
+  _id: mockId,
   email: "m.zaniewski19915@gmail.com",
   password: "$2a$10$YGGAb.ToDUNpqGIH.0K8nOCYAa/quCZPm536zeOIrcWXkLGeSarmS",
   verified: true,
-  createdAt: "2024-11-06T11:19:28.526+00:00",
-  updatedAt: "2024-11-07T18:11:25.846+00:00",
-  __v: "",
-};
+  createdAt: new Date(1),
+  updatedAt: new Date(1),
+} as Partial<UserDocument> as UserDocument;
 describe("userController test suite", () => {
   afterEach(() => {
     jest.resetAllMocks();
@@ -45,7 +47,7 @@ describe("userController test suite", () => {
       const resMock = mockResponse() as Response;
       const reqMock = mockRequest() as Request;
       resMock.locals.userId = "672b50c01df576319309286e";
-      jest.spyOn(UserModel, "findById").mockResolvedValue(null);
+      jest.spyOn(DatabaseClass.user, "findById").mockResolvedValue(null);
       await getUserHandler(reqMock, resMock, mockNext);
       expect(mockNext).toHaveBeenCalledWith(expect.any(AssertionError));
       expect(resMock.status).not.toHaveBeenCalled();
@@ -55,7 +57,7 @@ describe("userController test suite", () => {
       const resMock = mockResponse() as Response;
       const reqMock = mockRequest() as Request;
       resMock.locals.userId = "672b50c01df576319309286e";
-      jest.spyOn(UserModel, "findById").mockResolvedValue(userMock);
+      jest.spyOn(DatabaseClass.user, "findById").mockResolvedValue(userMock);
       await getUserHandler(reqMock, resMock, mockNext);
       expect(resMock.locals.userId).toBeDefined();
       expect(resMock.locals.userId).toBe("672b50c01df576319309286e");

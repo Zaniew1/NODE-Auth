@@ -6,7 +6,6 @@ import loginSchema, { emailSchema } from "../zodSchemas/loginSchema";
 import changePassSchema from "../zodSchemas/changePassSchema";
 import { Message } from "../../utils/constants/messages";
 import {
-  testSer,
   createUserService,
   loginUserService,
   refreshAccessTokenUserService,
@@ -48,7 +47,6 @@ export const logoutHandler: RequestHandler = catchAsync(async (req: Request, res
   const payload = JWT.validateAccessToken(accessToken);
   // remove session from db
   await DatabaseClass.session.findByIdAndDelete(payload.sessionId);
-
   // clear cookies
   return CookiesClass.clearAuthCookies(res).status(HttpErrors.OK).json({ message: Message.SUCCESS_USER_LOGOUT });
 });
@@ -86,8 +84,4 @@ export const refreshHandler: RequestHandler = catchAsync(async (req: Request, re
   res.status(HttpErrors.OK).cookie("accessToken", accessToken, CookiesClass.getAccessTokenCookieOptions()).json({
     message: Message.SUCCESS_USER_REFRESHED_TOKEN,
   });
-});
-
-export const test: RequestHandler = catchAsync(async (req: Request, res: Response) => {
-  await testSer();
 });
