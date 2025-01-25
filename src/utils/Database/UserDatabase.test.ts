@@ -1,8 +1,7 @@
 import CacheClass from "../../redis/CacheClass";
 import UserModel, { UserDocument } from "../../user/model/user.model";
-import { setUserHashKey } from "../../redis/user";
 import UserDatabase from "./UserDatabase";
-import mongoose, { Model } from "mongoose";
+import mongoose from "mongoose";
 const UserDb = new UserDatabase();
 const mockUserId = new mongoose.Types.ObjectId("123456789123456789123456") as UserDocument["_id"];
 const mockEmail: string = "mockMail";
@@ -22,8 +21,11 @@ const mockUserData = {
 } as Partial<UserDocument> as UserDocument;
 describe("userDatabase test suite", () => {
   describe("create method test suite", () => {
-    // const result = await UserDb.create(mockUserData);
-    // expect(result).toBeNull();
+    it("should create user", async () => {
+      jest.spyOn(UserModel, "create").mockResolvedValue(mockUserData as any);
+      const result = await UserDb.create(mockUserData);
+      expect(result.toObject()).toEqual(mockUserData.toObject());
+    });
   });
   describe("existsByEmail method test suite", () => {
     it("should return null if no data was found", async () => {

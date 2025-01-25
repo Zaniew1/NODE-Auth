@@ -109,7 +109,7 @@ export const forgotPasswordService = async (email: string) => {
   const user = await DatabaseClass.user.findOneByMail(email);
   appAssert(user, HttpErrors.NOT_FOUND, Message.FAIL_USER_NOT_FOUND);
 
-  const count = await DatabaseClass.verificationCode.findUsersPasswordResetCodes(user._id, VerificationCodeType.PasswordReset);
+  const count = await DatabaseClass.verificationCode.findUsersCodes(user._id, VerificationCodeType.PasswordReset);
   appAssert(count <= 1, HttpErrors.TOO_MANY_REQUESTS, Message.FAIL_REQUESTS_TOO_MANY);
 
   const expiresAt = oneHourFromNow();

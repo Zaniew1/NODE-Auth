@@ -9,10 +9,7 @@ import { fiveMinutesAgo } from "../../utils/helpers/date";
 export interface VerificationCodeClassType {
   create(properties: Partial<VerificationCodeDocument>): Promise<VerificationCodeDocument>;
   findByIdAndDelete(id: VerificationCodeDocument["_id"]): Promise<VerificationCodeDocument | null>;
-  findUsersPasswordResetCodes(
-    id: UserDocument["id"],
-    type: VerificationCodeType.PasswordReset | VerificationCodeType.EmailVerification
-  ): Promise<number>;
+  findUsersCodes(id: UserDocument["id"], type: VerificationCodeType.PasswordReset | VerificationCodeType.EmailVerification): Promise<number>;
   findOneByIdAndType(id: VerificationCodeDocument["_id"], type: string): Promise<VerificationCodeDocument | null>;
 }
 
@@ -28,10 +25,7 @@ export default class VerificationCodeClass implements VerificationCodeClassType 
     return await VerificationModel.findByIdAndDelete(id);
   }
 
-  async findUsersPasswordResetCodes(
-    id: UserDocument["id"],
-    type: VerificationCodeType.PasswordReset | VerificationCodeType.EmailVerification
-  ): Promise<number> {
+  async findUsersCodes(id: UserDocument["id"], type: VerificationCodeType.PasswordReset | VerificationCodeType.EmailVerification): Promise<number> {
     // rate limit
     const fiveMinAgo = fiveMinutesAgo();
 
@@ -40,18 +34,18 @@ export default class VerificationCodeClass implements VerificationCodeClassType 
       const allUserVerificationCodes = await Promise.all(
         userVerificationCodesId.map(async (id) => CacheClass.getHashCache<VerificationCodeDocument>(setVerificationCodeHashKey(id)))
       );
-      const codes = allUserVerificationCodes.filter((el) => el != null && el.type === type && el.createdAt >= fiveMinAgo).length;
+      const codes = allUserVerificationCodes.filter((el) => el != null && el.type == type && el.createdAt >= fiveMinAgo).length;
       return codes;
     }
     return await VerificationModel.countDocuments({
       userId: id,
-      type: VerificationCodeType.PasswordReset,
+      type: type,
       createdAt: { $gt: fiveMinAgo },
     });
   }
   async findOneByIdAndType(_id: VerificationCodeDocument["_id"], type: string): Promise<VerificationCodeDocument | null> {
     const verificationCode = await CacheClass.getHashCache<VerificationCodeDocument>(setVerificationCodeHashKey(_id));
-    if (!verificationCode || verificationCode.expiresAt < new Date() || verificationCode.type !== type) {
+    if (!verificationCode || verificationCode.expiresAt > new Date()) {
       const code = await VerificationModel.findOne({ _id, type, expiresAt: { $gt: new Date() } });
       if (code) await CacheClass.setHashCache<VerificationCodeDocument>(setVerificationCodeHashKey(code._id), code);
       return code;

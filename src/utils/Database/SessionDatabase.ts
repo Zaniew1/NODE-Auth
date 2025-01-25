@@ -8,7 +8,7 @@ export interface SessionClassType {
   create(properties: Partial<SessionDocument>): Promise<SessionDocument>;
   findById(id: SessionDocument["_id"]): Promise<SessionDocument | null>;
   deleteManyByUserId(userId: SessionDocument["_id"]): Promise<number | null>;
-  findSessionsByUserId(id: UserDocument["_id"]): Promise<SessionDocument[]>;
+  findSessionsByUserId(id: UserDocument["_id"]): Promise<SessionDocument[] | []>;
   findByIdAndDelete(id: SessionDocument["_id"]): Promise<SessionDocument | null>;
   findByIdAndUpdate(id: SessionDocument["_id"], properties: Partial<SessionDocument>): Promise<SessionDocument | null>;
 }
@@ -39,17 +39,22 @@ export default class SessionClass implements SessionClassType {
     }
     return (await SessionModel.deleteMany({ userId })).deletedCount;
   }
-  async findSessionsByUserId(id: UserDocument["_id"]): Promise<SessionDocument[]> {
+  async findSessionsByUserId(id: UserDocument["_id"]): Promise<SessionDocument[] | []> {
     let sessions: SessionDocument[] = [];
     const sessionsIdByUserId = await CacheClass.getCacheList(setSessionListKey(id));
-    sessionsIdByUserId?.forEach(async (sessionId) => {
-      const sessionObjectId = new mongoose.Types.ObjectId(sessionId);
-      const session = await CacheClass.getHashCache<SessionDocument>(setSessionHashKey(sessionObjectId));
+    if (sessionsIdByUserId?.length) {
+      // Use Promise.all to wait for all async operations to complete
+      const sessionPromises = sessionsIdByUserId.map(async (sessionId) => {
+        const sessionObjectId = new mongoose.Types.ObjectId(sessionId);
+        const session = await CacheClass.getHashCache<SessionDocument>(setSessionHashKey(sessionObjectId));
+        if (session?.expiresAt instanceof Date && session.expiresAt > new Date()) {
+          sessions.push(session);
+        }
+      });
 
-      if (session?.createdAt && session.createdAt instanceof Date && session.createdAt > new Date()) {
-        sessions.push(session as SessionDocument);
-      }
-    });
+      // Wait for all session checks to complete before continuing
+      await Promise.all(sessionPromises);
+    }
     if (sessions.length === 0) {
       sessions = await SessionModel.find({
         userId: id,

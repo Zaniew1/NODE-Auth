@@ -18,7 +18,6 @@ import CookiesClass from "../../utils/helpers/cookies";
 import { JWT } from "../../utils/helpers/Jwt";
 import appAssert from "../../utils/helpers/appAssert";
 import DatabaseClass from "../../utils/Database/Database";
-import { access } from "node:fs";
 export const registerHandler: RequestHandler = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   // validate data with zod
   const request = registerSchema.parse({ ...req.body, userAgent: req.headers["user-agent"] });
