@@ -1,0 +1,4 @@
+node_modules/
+dist/
+src/E2ETests/__test__/*
+/*.test.ts

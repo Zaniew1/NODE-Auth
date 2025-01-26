@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "description": "Authorization Project",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "ts-node-dev --files src/index.ts",
     "build": "tsc && cp ./package.json ./dist",
     "start": "node indes.js",
     "test": "jest",
+    "lint": "npx eslint ./src/**/*.ts --debug",
+    "format": "npx eslint src/**/*.ts --fix",
     "testwatch": "jest --watch",
     "coverage": "jest --coverage"
   },
@@ -25,7 +28,6 @@
   },
   "homepage": "https://github.com/Zaniew1/MERN-Auth#readme",
   "dependencies": {
-    "@prisma/client": "^5.21.1",
     "@types/jest": "^29.5.14",
     "@types/supertest": "^6.0.2",
     "bcrypt": "^5.1.1",
@@ -49,6 +51,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
+    "@babel/eslint-parser": "^7.26.5",
     "@babel/preset-env": "^7.26.0",
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
@@ -58,7 +61,13 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/mongoose": "^5.11.97",
     "@types/morgan": "^1.9.9",
+    "@typescript-eslint/eslint-plugin": "^8.21.0",
+    "@typescript-eslint/parser": "^8.21.0",
     "babel-jest": "^29.7.0",
+    "eslint": "^9.19.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-jsdoc": "^50.6.3",
+    "jiti": "^2.4.2",
     "jsdoc": "^4.0.4",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.6.2"
