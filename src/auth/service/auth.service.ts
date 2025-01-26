@@ -1,16 +1,17 @@
-import { newUserType } from '../zodSchemas/registerSchema';
-// import { SmtpMailer } from '../../../../NODE-Mailer/mailer';
-import { loginUserType } from '../zodSchemas/loginSchema';
-import { VerificationCodeDocument } from '../../auth/model/verificationCode.model';
-import { VerificationCodeType } from '../../types/verificationCodeManage';
-import { ONE_DAY_MS, oneHourFromNow, oneYearFromNow, thirtyDaysFromNow } from '../../utils/helpers/date';
-import { JWT } from '../../utils/helpers/Jwt';
 import appAssert from '../../utils/helpers/appAssert';
-import { APP_ORIGIN, APP_VERSION, PORT } from '../../utils/constants/env';
-import { hashPassword } from '../../utils/helpers/PasswordManage';
+import DatabaseClass from '../../utils/Database/Database';
+// import { SmtpMailer } from '../../../../NODE-Mailer/mailer';
+import { JWT } from '../../utils/helpers/Jwt';
 import { Message } from '../../utils/constants/messages';
 import { HttpErrors } from '../../utils/constants/http';
-import DatabaseClass from '../../utils/Database/Database';
+import { newUserType } from '../zodSchemas/registerSchema';
+import { hashPassword } from '../../utils/helpers/PasswordManage';
+import { loginUserType } from '../zodSchemas/loginSchema';
+import { VerificationCodeType } from '../../types/verificationCodeManage';
+import { VerificationCodeDocument } from '../../auth/model/verificationCode.model';
+import { APP_ORIGIN, APP_VERSION, PORT } from '../../utils/constants/env';
+import { ONE_DAY_MS, oneHourFromNow, oneYearFromNow, thirtyDaysFromNow } from '../../utils/helpers/date';
+
 export type changePasswordType = {
   verificationCode: string;
   password: string;

@@ -1,10 +1,3 @@
-import catchAsync from '../../utils/helpers/catchAsync';
-import { RequestHandler, Request, Response, NextFunction } from 'express';
-import registerSchema from '../zodSchemas/registerSchema';
-import verificationSchema from '../zodSchemas/verificationSchema';
-import loginSchema, { emailSchema } from '../zodSchemas/loginSchema';
-import changePassSchema from '../zodSchemas/changePassSchema';
-import { Message } from '../../utils/constants/messages';
 import {
   createUserService,
   loginUserService,
@@ -13,11 +6,19 @@ import {
   changePasswordService,
   forgotPasswordService,
 } from '../service/auth.service';
-import { HttpErrors } from '../../utils/constants/http';
-import CookiesClass from '../../utils/helpers/cookies';
-import { JWT } from '../../utils/helpers/Jwt';
 import appAssert from '../../utils/helpers/appAssert';
+import catchAsync from '../../utils/helpers/catchAsync';
+import CookiesClass from '../../utils/helpers/cookies';
 import DatabaseClass from '../../utils/Database/Database';
+import registerSchema from '../zodSchemas/registerSchema';
+import changePassSchema from '../zodSchemas/changePassSchema';
+import verificationSchema from '../zodSchemas/verificationSchema';
+import loginSchema, { emailSchema } from '../zodSchemas/loginSchema';
+import { JWT } from '../../utils/helpers/Jwt';
+import { Message } from '../../utils/constants/messages';
+import { HttpErrors } from '../../utils/constants/http';
+import { RequestHandler, Request, Response, NextFunction } from 'express';
+
 /**
  * Validates data sent by user, creates user, session and email verification code.
  * Assigns cookies - refreshToken and accessToken for future authorization, sends 201 status with message.
