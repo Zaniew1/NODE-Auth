@@ -1,12 +1,12 @@
-import jwt, { JsonWebTokenError, SignOptions, VerifyOptions } from "jsonwebtoken";
-import Audience from "../constants/audience";
-import { UserDocument } from "../../user/model/user.model";
-import { SessionDocument } from "../../session/model/session.model";
-import { JWT_ACCESS_EXPIRES_IN, JWT_REFRESH_SECRET, JWT_REFRESH_EXPIRES_IN, JWT_SECRET } from "../constants/env";
-import { HttpErrors } from "../constants/http";
-import appAssert from "./appAssert";
-import { AppErrorCode } from "./appError";
-import { Message } from "../constants/messages";
+import jwt, { SignOptions, VerifyOptions } from 'jsonwebtoken';
+import Audience from '../constants/audience';
+import { UserDocument } from '../../user/model/user.model';
+import { SessionDocument } from '../../session/model/session.model';
+import { JWT_ACCESS_EXPIRES_IN, JWT_REFRESH_SECRET, JWT_REFRESH_EXPIRES_IN, JWT_SECRET } from '../constants/env';
+import { HttpErrors } from '../constants/http';
+import appAssert from './appAssert';
+import { AppErrorCode } from './appError';
+import { Message } from '../constants/messages';
 interface JsonWebTokenClassInterface {
   signAccessToken(id: AccessTokenPayload, options: SignOptions): string;
   signRefreshToken(id: RefreshTokenPayload, options: SignOptions): string;
@@ -14,11 +14,11 @@ interface JsonWebTokenClassInterface {
   validateRefreshToken(token: string, options?: VerifyOptions): void;
 }
 export type AccessTokenPayload = {
-  userId: UserDocument["_id"];
-  sessionId: SessionDocument["_id"];
+  userId: UserDocument['_id'];
+  sessionId: SessionDocument['_id'];
 };
 export type RefreshTokenPayload = {
-  sessionId: SessionDocument["_id"];
+  sessionId: SessionDocument['_id'];
 };
 
 class JsonWebTokenClass implements JsonWebTokenClassInterface {
@@ -41,6 +41,7 @@ class JsonWebTokenClass implements JsonWebTokenClassInterface {
     try {
       payload = jwt.verify(token, this.accessTokenSecret, defaultOptions) as AccessTokenPayload;
     } catch (error) {
+      console.log(error);
       appAssert(false, HttpErrors.UNAUTHORIZED, Message.FAIL_TOKEN_ACCESS_INVALID, AppErrorCode.InvalidAccessToken);
     }
     return payload;
@@ -50,7 +51,8 @@ class JsonWebTokenClass implements JsonWebTokenClassInterface {
     let payload;
     try {
       payload = jwt.verify(token, this.refreshTokenSecret, defaultOptions) as RefreshTokenPayload;
-    } catch (error: any) {
+    } catch (error) {
+      console.log(error);
       appAssert(false, HttpErrors.UNAUTHORIZED, Message.FAIL_USER_NOT_AUTHORIZED, AppErrorCode.InvalidAccessToken);
     }
     return payload;

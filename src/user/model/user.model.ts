@@ -1,8 +1,8 @@
-import mongoose, { ObjectId, Types } from "mongoose";
-import { comparePasswords, hashPassword } from "../../utils/helpers/PasswordManage";
-import { HttpErrors } from "../../utils/constants/http";
-import { Message } from "../../utils/constants/messages";
-import appAssert from "../../utils/helpers/appAssert";
+import mongoose, { Types } from 'mongoose';
+import { comparePasswords, hashPassword } from '../../utils/helpers/PasswordManage';
+import { HttpErrors } from '../../utils/constants/http';
+import { Message } from '../../utils/constants/messages';
+import appAssert from '../../utils/helpers/appAssert';
 
 export interface UserDocument extends mongoose.Document {
   _id: Types.ObjectId;
@@ -15,7 +15,7 @@ export interface UserDocument extends mongoose.Document {
   createdAt: Date;
   updatedAt: Date;
   comparePassword(val: string): Promise<boolean>;
-  omitPassword(): Pick<UserDocument, "_id" | "email" | "verified" | "createdAt" | "updatedAt">;
+  omitPassword(): Pick<UserDocument, '_id' | 'email' | 'verified' | 'createdAt' | 'updatedAt'>;
 }
 
 const userSchema = new mongoose.Schema<UserDocument>(
@@ -29,11 +29,11 @@ const userSchema = new mongoose.Schema<UserDocument>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 export async function preSaveUser(this: UserDocument, next: () => void) {
-  if (!this.isModified("password")) {
+  if (!this.isModified('password')) {
     return next();
   }
   const hashedPass = await hashPassword(this.password);
@@ -42,7 +42,7 @@ export async function preSaveUser(this: UserDocument, next: () => void) {
   next();
 }
 
-userSchema.pre("save", preSaveUser);
+userSchema.pre('save', preSaveUser);
 
 userSchema.methods.comparePassword = async function (val: string) {
   return comparePasswords(val, this.password);
@@ -54,5 +54,5 @@ userSchema.methods.omitPassword = function () {
   return user;
 };
 
-const UserModel = mongoose.model<UserDocument>("User", userSchema);
+const UserModel = mongoose.model<UserDocument>('User', userSchema);
 export default UserModel;

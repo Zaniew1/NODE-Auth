@@ -1,11 +1,15 @@
-import mongoose from "mongoose";
-import redisClient from "./redisClient";
-import { CacheClassType } from "./CacheClass";
-import { FlatObject } from "./CacheClass";
+import mongoose from 'mongoose';
+import redisClient from './redisClient';
+import { CacheClassType } from './CacheClass';
+import { FlatObject } from './CacheClass';
 
 export class Cache implements CacheClassType {
   constructor() {}
-  public replaceCacheData = async <T extends object>(key: string, field: keyof T, value: string): Promise<number | null> => {
+  public replaceCacheData = async <T extends object>(
+    key: string,
+    field: keyof T,
+    value: string,
+  ): Promise<number | null> => {
     try {
       return await redisClient.HSET(key, field as string, value as string);
     } catch (e) {
@@ -45,6 +49,7 @@ export class Cache implements CacheClassType {
     try {
       return await redisClient.LPUSH(key, String(listElement));
     } catch (e) {
+      console.log(e);
       return null;
     }
   };
@@ -52,6 +57,7 @@ export class Cache implements CacheClassType {
     try {
       return await redisClient.LRANGE(key, 0, -1);
     } catch (e) {
+      console.log(e);
       return null;
     }
   };
@@ -78,11 +84,16 @@ export class Cache implements CacheClassType {
   public serializeCache = <T extends object>(attributes: T): FlatObject => {
     const serializedObj: FlatObject = {};
     Object.entries(attributes).forEach(([key, value]) => {
-      if (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || mongoose.isValidObjectId(value)) {
+      if (
+        typeof value === 'string' ||
+        typeof value === 'number' ||
+        typeof value === 'boolean' ||
+        mongoose.isValidObjectId(value)
+      ) {
         serializedObj[key] = String(value);
       } else if (value instanceof Date) {
         serializedObj[key] = String(value.getTime());
-      } else if ((typeof value === "object" || typeof value === "function") && value !== null) {
+      } else if ((typeof value === 'object' || typeof value === 'function') && value !== null) {
         serializedObj[key] = JSON.stringify(value); // Serialize nested objects as JSON strings
       }
     });
@@ -91,14 +102,14 @@ export class Cache implements CacheClassType {
   public deserializeCache = <T extends object>(flatObject: FlatObject): T => {
     const deserializedObj: Partial<T> = {};
     Object.entries(flatObject).forEach(([key, value]) => {
-      if ((key === "_id" || key === "userId") && mongoose.isValidObjectId(value)) {
+      if ((key === '_id' || key === 'userId') && mongoose.isValidObjectId(value)) {
         deserializedObj[key as keyof T] = new mongoose.Types.ObjectId(value) as T[keyof T];
-      } else if (key === "expiresAt" || key === "createdAt" || key === "updatedAt") {
+      } else if (key === 'expiresAt' || key === 'createdAt' || key === 'updatedAt') {
         deserializedObj[key as keyof T] = new Date(Number(value)) as T[keyof T];
-      } else if (key === "name" || key === "surname" || key === "type" || key === "email" || key === "userAgent") {
+      } else if (key === 'name' || key === 'surname' || key === 'type' || key === 'email' || key === 'userAgent') {
         deserializedObj[key as keyof T] = String(value) as T[keyof T];
-      } else if (value === "true" || value === "false") {
-        deserializedObj[key as keyof T] = (value === "true") as T[keyof T];
+      } else if (value === 'true' || value === 'false') {
+        deserializedObj[key as keyof T] = (value === 'true') as T[keyof T];
       } else if (!isNaN(Number(value))) {
         deserializedObj[key as keyof T] = Number(value) as T[keyof T];
       } else {

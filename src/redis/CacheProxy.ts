@@ -1,36 +1,40 @@
-import mongoose from "mongoose";
-import { CacheClassType } from "./CacheClass";
-import { FlatObject } from "./CacheClass";
+import mongoose from 'mongoose';
+import { CacheClassType } from './CacheClass';
+import { FlatObject } from './CacheClass';
 export class CacheProxyClass implements CacheClassType {
   constructor() {}
-  public replaceCacheData = async <T extends object>(key: string, field: keyof T, value: string): Promise<number | null> => {
+  public replaceCacheData = async <T extends object>(
+    _key: string,
+    _field: keyof T,
+    _value: string,
+  ): Promise<number | null> => {
     return null;
   };
-  public setHashCache = async <T extends object>(key: string, attributes: T): Promise<number | null> => {
+  public setHashCache = async <T extends object>(_key: string, _attributes: T): Promise<number | null> => {
     return null;
   };
-  public getHashCache = async <T extends object>(key: string): Promise<T | null> => {
+  public getHashCache = async <T extends object>(_key: string): Promise<T | null> => {
     return null;
   };
-  public deleteHashCacheById = async (key: string): Promise<number | null> => {
+  public deleteHashCacheById = async (_key: string): Promise<number | null> => {
     return null;
   };
-  public setCacheList = async <T>(key: string, listElement: T): Promise<number | null> => {
+  public setCacheList = async <T>(_key: string, _listElement: T): Promise<number | null> => {
     return null;
   };
-  public getCacheList = async (key: string): Promise<string[] | null> => {
+  public getCacheList = async (_key: string): Promise<string[] | null> => {
     return null;
   };
-  public setStringCache = async (key: string, value: string): Promise<string | null> => {
+  public setStringCache = async (_key: string, _value: string): Promise<string | null> => {
     return null;
   };
-  public getStringCache = async (key: string): Promise<mongoose.Types.ObjectId | null> => {
+  public getStringCache = async (_key: string): Promise<mongoose.Types.ObjectId | null> => {
     return null;
   };
-  public serializeCache = <T extends object>(attributes: T): FlatObject => {
+  public serializeCache = <T extends object>(_attributes: T): FlatObject => {
     return {};
   };
-  public deserializeCache = <T extends object>(flatObject: FlatObject): T => {
+  public deserializeCache = <T extends object>(_flatObject: FlatObject): T => {
     const deserializedObj: Partial<T> = {};
     return deserializedObj as T;
   };

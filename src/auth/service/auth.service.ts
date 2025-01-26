@@ -1,17 +1,30 @@
-import { newUserType } from "../zodSchemas/registerSchema";
-// import { SmtpMailer } from "../../../NODE-Mailer/mailer";
-import { loginUserType } from "../zodSchemas/loginSchema";
-import { VerificationCodeDocument } from "../../auth/model/verificationCode.model";
-import { VerificationCodeType } from "../../types/verificationCodeManage";
-import { ONE_DAY_MS, oneHourFromNow, oneYearFromNow, thirtyDaysFromNow } from "../../utils/helpers/date";
-import { JWT } from "../../utils/helpers/Jwt";
-import appAssert from "../../utils/helpers/appAssert";
-import { APP_ORIGIN, APP_VERSION, PORT } from "../../utils/constants/env";
-import { hashPassword } from "../../utils/helpers/PasswordManage";
-import { Message } from "../../utils/constants/messages";
-import { HttpErrors } from "../../utils/constants/http";
-import DatabaseClass from "../../utils/Database/Database";
+import { newUserType } from '../zodSchemas/registerSchema';
+// import { SmtpMailer } from '../../../../NODE-Mailer/mailer';
+import { loginUserType } from '../zodSchemas/loginSchema';
+import { VerificationCodeDocument } from '../../auth/model/verificationCode.model';
+import { VerificationCodeType } from '../../types/verificationCodeManage';
+import { ONE_DAY_MS, oneHourFromNow, oneYearFromNow, thirtyDaysFromNow } from '../../utils/helpers/date';
+import { JWT } from '../../utils/helpers/Jwt';
+import appAssert from '../../utils/helpers/appAssert';
+import { APP_ORIGIN, APP_VERSION, PORT } from '../../utils/constants/env';
+import { hashPassword } from '../../utils/helpers/PasswordManage';
+import { Message } from '../../utils/constants/messages';
+import { HttpErrors } from '../../utils/constants/http';
+import DatabaseClass from '../../utils/Database/Database';
+export type changePasswordType = {
+  verificationCode: string;
+  password: string;
+};
 
+/**
+ * This service checks if user with given email already exists.  If no then creates user,
+ * his session and verification code for email verification. Also sends a mail with this verification code
+ * Then returns created user with accessToken and refreshToken
+ *
+ * @async
+ * @param {newUserType} data
+ * @returns {user, accessToken, refreshToken}
+ */
 export const createUserService = async (data: newUserType) => {
   const { email, userAgent } = data as newUserType;
   //check user existance and create if not exist
@@ -26,7 +39,7 @@ export const createUserService = async (data: newUserType) => {
     expiresAt: oneYearFromNow(),
   });
 
-  // we send email with welcome Card component as welcome message
+  //  send email with welcome Card component as welcome message
   const url = `${APP_ORIGIN}:${PORT}/api/${APP_VERSION}/verify/${verificationCode._id}`;
   // SmtpMailer.sendWelcome({ email, name, url });
 
@@ -47,7 +60,20 @@ export const createUserService = async (data: newUserType) => {
   };
 };
 
+/**
+ * This service checks if user exists, then compares password given by a user and that one in database.
+ * If its the same then creates session for this user, and based of that session and user creates accessToken and refresh token via JWT
+ * Then returns user(without password), refresh token and access token
+ *
+ * @async
+ * @param {loginUserType} param0
+ * @param {loginUserType} param0.password
+ * @param {loginUserType} param0.email
+ * @param {loginUserType} param0.userAgent
+ * @returns {user, accessToken, refreshToken}
+ */
 export const loginUserService = async ({ password, email, userAgent }: loginUserType) => {
+  //validate user and password
   const user = await DatabaseClass.user.findOneByMail(email);
   appAssert(user, HttpErrors.UNAUTHORIZED, Message.FAIL_USER_INVALID);
   const passIsValid = user.comparePassword(password);
@@ -71,6 +97,15 @@ export const loginUserService = async ({ password, email, userAgent }: loginUser
   };
 };
 
+/**
+ * This service serves as a refresher for a session. If session is close to being expired (below 1 day),
+ * then it will update session property "expiresAt" to another month in the future.
+ * At the end it creates new tokens.
+ *
+ * @async
+ * @param {string} refreshToken
+ * @returns {typeof accessToken, newRefreshToken}
+ */
 export const refreshAccessTokenUserService = async (refreshToken: string) => {
   const payload = JWT.validateRefreshToken(refreshToken);
   appAssert(payload, HttpErrors.UNAUTHORIZED, Message.FAIL_TOKEN_REFRESH_INVALID);
@@ -91,7 +126,15 @@ export const refreshAccessTokenUserService = async (refreshToken: string) => {
     newRefreshToken,
   };
 };
-export const verifyUserEmailService = async (verificationCode: VerificationCodeDocument["_id"]) => {
+/**
+ * This service serves as email verifier. First it checks if verificationCode (from mail) is valid. Then updates users property (verify : true).
+ * Then deletes verification code that was used to validate verification code from a email. And returns user (no password)
+ *
+ * @async
+ * @param {VerificationCodeDocument['_id']} verificationCode
+ * @returns {user}
+ */
+export const verifyUserEmailService = async (verificationCode: VerificationCodeDocument['_id']) => {
   const validCode = await DatabaseClass.verificationCode.findOneByIdAndType(verificationCode, VerificationCodeType.EmailVerification);
   appAssert(validCode, HttpErrors.NOT_FOUND, Message.FAIL_VERIFICATION_CODE_INVALID);
   // get user and set verified = true
@@ -104,10 +147,18 @@ export const verifyUserEmailService = async (verificationCode: VerificationCodeD
   };
 };
 
+/**
+ * This service makes possible for a user to send mail with new password, if he forgets his password.
+ * First user with given email is validated. Then service checks how many codes were sent recently (rate limiting).
+ * Then verification is being sent to an email - 1 hour valid.
+ *
+ * @async
+ * @param {string} email
+ * @returns {url}
+ */
 export const forgotPasswordService = async (email: string) => {
   const user = await DatabaseClass.user.findOneByMail(email);
   appAssert(user, HttpErrors.NOT_FOUND, Message.FAIL_USER_NOT_FOUND);
-
   const count = await DatabaseClass.verificationCode.findUsersCodes(user._id, VerificationCodeType.PasswordReset);
   appAssert(count <= 1, HttpErrors.TOO_MANY_REQUESTS, Message.FAIL_REQUESTS_TOO_MANY);
 
@@ -119,17 +170,26 @@ export const forgotPasswordService = async (email: string) => {
     expiresAt,
   });
 
-  const url = `${APP_ORIGIN}:${PORT}/api/${APP_VERSION}/auth/changePassword?verificationCode=${verificationCode._id}&exp=${expiresAt.getTime()}`;
   // we send email with reset password
+  const url = `${APP_ORIGIN}:${PORT}/api/${APP_VERSION}/auth/changePassword?verificationCode=${verificationCode._id}&exp=${expiresAt.getTime()}`;
   // SmtpMailer.sendReset({ email, name, url });
   return {
     url,
   };
 };
-export type changePasswordType = {
-  verificationCode: string;
-  password: string;
-};
+
+/**
+ * This service is being used when user clicks his forget password message on his email.
+ * First verification code is being checked. If it is in DB, new password is generated and user's pass is updated.
+ * At the end verificationCode and all of user's sessions are deleted (prevent hackers).
+ *
+ *
+ * @async
+ * @param {changePasswordType} param0
+ * @param {VerificationCodeType} param0.verificationCode
+ * @param {string} param0.password
+ * @returns {user} - without pass
+ */
 export const changePasswordService = async ({ verificationCode, password }: changePasswordType) => {
   // find verification code that has been sent via mail
   const validCode = await DatabaseClass.verificationCode.findOneByIdAndType(verificationCode, VerificationCodeType.PasswordReset);
