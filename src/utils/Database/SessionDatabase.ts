@@ -1,26 +1,26 @@
-import CacheClass from "../../redis/CacheClass";
-import { setSessionHashKey, setSessionListKey } from "../../redis/session";
-import { SessionDocument } from "../../session/model/session.model";
-import SessionModel from "../../session/model/session.model";
-import mongoose from "mongoose";
-import { UserDocument } from "../../user/model/user.model";
+import CacheClass from '../../redis/CacheClass';
+import { setSessionHashKey, setSessionListKey } from '../../redis/session';
+import { SessionDocument } from '../../session/model/session.model';
+import SessionModel from '../../session/model/session.model';
+import mongoose from 'mongoose';
+import { UserDocument } from '../../user/model/user.model';
 export interface SessionClassType {
   create(properties: Partial<SessionDocument>): Promise<SessionDocument>;
-  findById(id: SessionDocument["_id"]): Promise<SessionDocument | null>;
-  deleteManyByUserId(userId: SessionDocument["_id"]): Promise<number | null>;
-  findSessionsByUserId(id: UserDocument["_id"]): Promise<SessionDocument[] | []>;
-  findByIdAndDelete(id: SessionDocument["_id"]): Promise<SessionDocument | null>;
-  findByIdAndUpdate(id: SessionDocument["_id"], properties: Partial<SessionDocument>): Promise<SessionDocument | null>;
+  findById(id: SessionDocument['_id']): Promise<SessionDocument | null>;
+  deleteManyByUserId(userId: SessionDocument['_id']): Promise<number | null>;
+  findSessionsByUserId(id: UserDocument['_id']): Promise<SessionDocument[] | []>;
+  findByIdAndDelete(id: SessionDocument['_id']): Promise<SessionDocument | null>;
+  findByIdAndUpdate(id: SessionDocument['_id'], properties: Partial<SessionDocument>): Promise<SessionDocument | null>;
 }
 
 export default class SessionClass implements SessionClassType {
   async create(properties: Partial<SessionDocument>): Promise<SessionDocument> {
     const session = await SessionModel.create(properties);
     await CacheClass.setHashCache<SessionDocument>(setSessionHashKey(session._id), session.toObject());
-    await CacheClass.setCacheList<SessionDocument["_id"]>(setSessionListKey(session.userId), session._id);
+    await CacheClass.setCacheList<SessionDocument['_id']>(setSessionListKey(session.userId), session._id);
     return session;
   }
-  async findById(id: SessionDocument["_id"]): Promise<SessionDocument | null> {
+  async findById(id: SessionDocument['_id']): Promise<SessionDocument | null> {
     const sessionCache = await CacheClass.getHashCache<SessionDocument>(setSessionHashKey(id));
     if (!sessionCache) {
       const session = await SessionModel.findById(id);
@@ -29,7 +29,7 @@ export default class SessionClass implements SessionClassType {
     }
     return sessionCache;
   }
-  async deleteManyByUserId(userId: UserDocument["_id"]): Promise<number | null> {
+  async deleteManyByUserId(userId: UserDocument['_id']): Promise<number | null> {
     const sessionsId = await CacheClass.getCacheList(setSessionListKey(userId));
     if (sessionsId) {
       sessionsId.forEach(async (session) => {
@@ -39,7 +39,7 @@ export default class SessionClass implements SessionClassType {
     }
     return (await SessionModel.deleteMany({ userId })).deletedCount;
   }
-  async findSessionsByUserId(id: UserDocument["_id"]): Promise<SessionDocument[] | []> {
+  async findSessionsByUserId(id: UserDocument['_id']): Promise<SessionDocument[] | []> {
     let sessions: SessionDocument[] = [];
     const sessionsIdByUserId = await CacheClass.getCacheList(setSessionListKey(id));
     if (sessionsIdByUserId?.length) {
@@ -67,15 +67,15 @@ export default class SessionClass implements SessionClassType {
       return dateA - dateB;
     });
   }
-  async findByIdAndDelete(id: SessionDocument["_id"]): Promise<SessionDocument | null> {
+  async findByIdAndDelete(id: SessionDocument['_id']): Promise<SessionDocument | null> {
     await CacheClass.deleteHashCacheById(setSessionHashKey(id));
     const session = await SessionModel.findByIdAndDelete(String(id));
     return session;
   }
-  async findByIdAndUpdate(id: SessionDocument["_id"], properties: Partial<SessionDocument>): Promise<SessionDocument | null> {
+  async findByIdAndUpdate(id: SessionDocument['_id'], properties: Partial<SessionDocument>): Promise<SessionDocument | null> {
     Object.entries(CacheClass.serializeCache<Partial<SessionDocument>>(properties)).forEach(async ([key, value]) => {
       const typedKey = key as keyof SessionDocument;
-      await CacheClass.replaceCacheData<SessionDocument>(setSessionHashKey(id), typedKey, String(value as SessionDocument[typeof typedKey]));
+      await CacheClass.replaceHashCacheData<SessionDocument>(setSessionHashKey(id), typedKey, String(value as SessionDocument[typeof typedKey]));
     });
     const updatedSession = await SessionModel.findOneAndUpdate({ _id: id }, properties);
     return updatedSession;

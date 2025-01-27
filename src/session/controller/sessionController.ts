@@ -6,7 +6,13 @@ import { RequestHandler, Request, Response, NextFunction } from 'express';
 import { objectIdSchema } from '../../auth/zodSchemas/ObjectIdSchema';
 import DatabaseClass from '../../utils/Database/Database';
 import { SessionDocument } from '../model/session.model';
-export const getSessionHandler: RequestHandler = catchAsync(async (_req: Request, res: Response, _next: NextFunction) => {
+/**
+ * This controller function retrieves all sessions that user has.
+ * It adds {isCurrent: true} to a session that user is currently on.
+ *
+ * @type {RequestHandler}
+ */
+export const getSessionsHandler: RequestHandler = catchAsync(async (_req: Request, res: Response, _next: NextFunction) => {
   const userID = objectIdSchema.parse(res.locals.userId);
   const sessionID = objectIdSchema.parse(res.locals.sessionId);
   const sessions = await DatabaseClass.session.findSessionsByUserId(userID);
@@ -22,6 +28,11 @@ export const getSessionHandler: RequestHandler = catchAsync(async (_req: Request
   });
   res.status(HttpErrors.OK).json({ sessions: sessionsAndCurrentSession });
 });
+/**
+ * This controller function deletes one session by id.
+ *
+ * @type {RequestHandler}
+ */
 export const deleteSessionHandler: RequestHandler = catchAsync(async (req: Request, res: Response, _next: NextFunction) => {
   const sessionId = objectIdSchema.parse(req.body.id);
   const sessionDeleted = await DatabaseClass.session.findByIdAndDelete(sessionId);

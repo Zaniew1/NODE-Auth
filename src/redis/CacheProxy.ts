@@ -1,13 +1,19 @@
 import mongoose from 'mongoose';
 import { CacheClassType } from './CacheClass';
 import { FlatObject } from './CacheClass';
+
+/**
+ * This is a mock class. It runs when user does not want to use Redis (REDIS_ON == "false").
+ *
+ * @export
+ * @class CacheProxyClass
+ * @typedef {CacheProxyClass}
+ * @implements {CacheClassType}
+ */
+
 export class CacheProxyClass implements CacheClassType {
   constructor() {}
-  public replaceCacheData = async <T extends object>(
-    _key: string,
-    _field: keyof T,
-    _value: string,
-  ): Promise<number | null> => {
+  public replaceHashCacheData = async <T extends object>(_key: string, _field: keyof T, _value: string): Promise<number | null> => {
     return null;
   };
   public setHashCache = async <T extends object>(_key: string, _attributes: T): Promise<number | null> => {

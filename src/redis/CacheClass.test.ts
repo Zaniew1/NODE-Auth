@@ -23,7 +23,7 @@ if (REDIS_ON == 'true') {
     afterAll(() => {
       jest.resetAllMocks();
     });
-    describe('replaceCacheData method test suite', () => {
+    describe('replaceHashCacheData method test suite', () => {
       it('Should return null if there was an error in Redis', async () => {
         const mockHSET = redisClient.HSET as jest.Mock;
         mockHSET.mockRejectedValue(new Error('Redis error'));
@@ -32,7 +32,7 @@ if (REDIS_ON == 'true') {
         const field = 'testField';
         const value = 'testValue';
 
-        const result = await CacheClass.replaceCacheData(key, field, value);
+        const result = await CacheClass.replaceHashCacheData(key, field, value);
         expect(mockHSET).toHaveBeenCalledWith(key, field, value);
         expect(result).toBeNull();
       });
@@ -44,7 +44,7 @@ if (REDIS_ON == 'true') {
         const field = 'testField';
         const value = 'testValue';
 
-        const result = await CacheClass.replaceCacheData(key, field, value);
+        const result = await CacheClass.replaceHashCacheData(key, field, value);
         expect(mockHSET).toHaveBeenCalledWith(key, field, value);
         expect(result).toBe(0);
       });
@@ -56,7 +56,7 @@ if (REDIS_ON == 'true') {
         const field = 'testField';
         const value = 'testValue';
 
-        const result = await CacheClass.replaceCacheData(key, field, value);
+        const result = await CacheClass.replaceHashCacheData(key, field, value);
         expect(mockHSET).toHaveBeenCalledWith(key, field, value);
         expect(result).toBe(1);
       });
@@ -321,8 +321,8 @@ describe('CacheProxyClass test suite', () => {
   afterAll(() => {
     process.env.REDIS_ON = 'true';
   });
-  it('Should return null from replaceCacheData', async () => {
-    const result = await ProxyClass.replaceCacheData<Partial<UserDocument>>('', 'name', '123');
+  it('Should return null from replaceHashCacheData', async () => {
+    const result = await ProxyClass.replaceHashCacheData<Partial<UserDocument>>('', 'name', '123');
     expect(result).toBeNull();
   });
   it('Should return null from setHashCache', async () => {
