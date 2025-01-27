@@ -25,7 +25,7 @@ jobs:
           JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           MONGO_DB_PASS: ${{ secrets.MONGO_DB_PASS }}
-          NODE_ENV: ${{ secrets.NODE_ENV }}
+          NODE_ENV: "test"
           PORT: ${{ secrets.PORT }}
           REDIS_ON: ${{ secrets.REDIS_ON }}
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
