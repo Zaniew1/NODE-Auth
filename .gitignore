@@ -12,7 +12,8 @@ lerna-debug.log*
 *.tsbuildinfo
 # Optional npm cache directory
 .npm
-
+dist
+docs
 # Optional eslint cache
 .eslintcache
 

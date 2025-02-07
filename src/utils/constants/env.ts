@@ -4,8 +4,8 @@ import 'dotenv/config';
  * If env variable is undefined it assigns default value if its provided.
  * With this function in your code, you don't need to check if such an environment variable exists
  *
- * @param {string} key
- * @param {?string} [defaultVal]
+ * @param {string} key Environmental variable from .env
+ * @param {?string} [defaultVal] Default value if no environmental variable
  * @returns {string}
  */
 export const getEnv = (key: string, defaultVal?: string): string => {

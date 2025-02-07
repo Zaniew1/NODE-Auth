@@ -1,0 +1,15 @@
+  {
+    "tags": {
+      "allowUnknownTags": true
+    },
+    "source": {
+      "include": ["dist"],
+      "exclude": ["node_modules", ".github"],
+      "includePattern": ".js$",
+      "excludePattern": "(node_modules/|docs)"
+    },
+    "opts": {
+      "destination": "./docs",
+      "recurse": true
+    }
+  }

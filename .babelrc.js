@@ -12,7 +12,7 @@ export default [
           "@babel/preset-typescript"
         ],
         "plugins": [
-          "@babel/plugin-transform-runtime"
+          "@babel/plugin-syntax-typescript"
         ]
       }
       
