@@ -23,7 +23,7 @@ export const JWT_ACCESS_EXPIRES_IN = getEnv('JWT_ACCESS_EXPIRES_IN', '15m');
 export const JWT_REFRESH_EXPIRES_IN = getEnv('JWT_REFRESH_EXPIRES_IN', '30d');
 export const APP_VERSION = getEnv('APP_VERSION', 'v1.1.1');
 export const APP_ORIGIN = getEnv('APP_ORIGIN', 'http://localhost');
-export const MONGO_DB_PASS = getEnv('MONGO_DB_PASS');
+export const DATABASE_URL = getEnv('DATABASE_URL', 'file:./prisma/dev.db');
 
 export const REDIS_ON = getEnv('REDIS_ON', 'false');
 export const REDIS_HOST = getEnv('REDIS_HOST', 'redis-18265.c278.us-east-1-4.ec2.redns.redis-cloud.com');
