@@ -1,0 +1,48 @@
+# All api requests for this project
+
+POST http://localhost:3000/api/v1.1.1/auth/register
+Content-Type: application/json
+
+{
+    "name": "Ktos",
+    "email": "ktos@ktoś.pl",
+    "password": "ktośktoś",
+    "confirmPassword": "ktośktoś",
+}
+
+POST http://localhost:3000/api/v1.1.1/auth/login
+Content-Type: application/json
+
+{
+    "email": "ktos@ktoś.pl",
+    "password": "ktośktoś",
+}
+
+POST http://localhost:3000/api/v1.1.1/auth/logout
+Content-Type: application/json
+
+{
+   
+}
+
+POST http://localhost:3000/api/v1.1.1/auth/changePassword
+Content-Type: application/json
+
+{
+
+}
+
+PATCH http://localhost:3000/api/v1.1.1/auth/forgotPassword
+Content-Type: application/json
+
+{
+
+}
+
+### ingest documents for RAG system
+GET http://localhost:3000/api/v1.1.1/auth/verify
+
+### Check health
+GET http://localhost:3000/api/v1.1.1/auth/refresh
+
+
