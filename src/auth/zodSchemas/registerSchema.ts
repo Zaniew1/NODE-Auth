@@ -1,6 +1,6 @@
 import { z } from "zod";
 import loginSchema from "./loginSchema";
-import { ObjectId } from "mongoose";
+
 export const registerSchema = loginSchema
   .extend({
     name: z
@@ -28,11 +28,4 @@ export const registerSchema = loginSchema
     path: ["confirmPassword"],
   });
 export type newUserType = z.infer<typeof registerSchema>;
-export type UserType = newUserType & {
-  _id: ObjectId;
-  verified: boolean;
-  createdAt: Date;
-  modifiedAt: Date;
-  enterprises: [];
-};
 export default registerSchema;

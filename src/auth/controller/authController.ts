@@ -9,7 +9,7 @@ import {
 import appAssert from '../../utils/helpers/appAssert';
 import catchAsync from '../../utils/helpers/catchAsync';
 import CookiesClass from '../../utils/helpers/cookies';
-import DatabaseClass from '../../utils/Database/Database';
+import PrismaDatabase from '../../utils/Database/PrismaDatabase';
 import registerSchema from '../zodSchemas/registerSchema';
 import changePassSchema from '../zodSchemas/changePassSchema';
 import verificationSchema from '../zodSchemas/verificationSchema';
@@ -65,7 +65,7 @@ export const logoutHandler: RequestHandler = catchAsync(async (req: Request, res
   appAssert(accessToken, HttpErrors.UNAUTHORIZED, Message.FAIL_TOKEN_ACCESS_MISSING);
   const payload = JWT.validateAccessToken(accessToken);
   // remove session from db
-  await DatabaseClass.session.findByIdAndDelete(payload.sessionId);
+  await PrismaDatabase.session.findByIdAndDelete(payload.sessionId);
   // clear cookies
   return CookiesClass.clearAuthCookies(res).status(HttpErrors.OK).json({ message: Message.SUCCESS_USER_LOGOUT });
 });

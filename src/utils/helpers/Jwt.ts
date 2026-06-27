@@ -1,7 +1,5 @@
 import jwt, { SignOptions, VerifyOptions } from 'jsonwebtoken';
 import Audience from '../constants/audience';
-import { UserDocument } from '../../user/model/user.model';
-import { SessionDocument } from '../../session/model/session.model';
 import { JWT_ACCESS_EXPIRES_IN, JWT_REFRESH_SECRET, JWT_REFRESH_EXPIRES_IN, JWT_SECRET } from '../constants/env';
 import { HttpErrors } from '../constants/http';
 import appAssert from './appAssert';
@@ -15,12 +13,12 @@ interface JsonWebTokenClassInterface {
 }
 
 export type AccessTokenPayload = {
-  userId: UserDocument['_id'];
-  sessionId: SessionDocument['_id'];
+  userId: string;
+  sessionId: string;
 };
 
 export type RefreshTokenPayload = {
-  sessionId: SessionDocument['_id'];
+  sessionId: string;
 };
 
 /**
